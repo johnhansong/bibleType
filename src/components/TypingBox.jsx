@@ -1,24 +1,50 @@
 import React from "react"
 import UpperMenu from "./UpperMenu"
+import { useTestMode } from "../context/testModeContext"
 import { createRef, useRef, useState, useEffect, useMemo } from "react"
 import { generate } from "random-words"
 
 const TypingBox = () => {
 
   const inputRef = useRef(null);
-  const [wordsArray, setWordsArray] = useState(() => generate(50))
-  const [countDown, setCountDown] = useState(15)
-  const [currWordIndex, setCurrWordIndex] = useState(0)
-  const [currCharIndex, setCurrCharIndex] = useState(0)
+  const {testTime} = useTestMode();
+  const [wordsArray, setWordsArray] = useState(() => generate(50));
+  const [countDown, setCountDown] = useState(testTime);
+  const [testStart, setTestStart] = useState(false);
+  const [testEnd, setTestEnd] = useState(false);
+  const [currWordIndex, setCurrWordIndex] = useState(0);
+  const [currCharIndex, setCurrCharIndex] = useState(0);
   // console.log("currWordIdx", currWordIndex)
   // console.log("currCharIndex", currCharIndex)
 
 
   const wordsSpanRef = useMemo(() => {
     return Array(wordsArray.length).fill(0).map(i=>createRef(null));
-  }, [wordsArray])
+  }, [wordsArray]);
+
+  const startTimer = () => {
+    const intervalId = setInterval(timer, 1000);
+    function timer() {
+      setCountDown((latestCountDown) => {
+        if (latestCountDown === 1) {
+          setTestEnd(true);
+          clearInterval(intervalId);
+          return 0;
+        }
+
+        return latestCountDown-1
+      })
+    }
+  }
 
   const handleUserInput = (e) => {
+
+    if (!testStart) {
+      // if test has not started upon initial key press, start timer and test start
+      startTimer();
+      setTestStart(true);
+    }
+
     const allCurrChars = wordsSpanRef[currWordIndex].current.childNodes;
     // console.log("allCurrChars", allCurrChars.length)
 
@@ -128,13 +154,19 @@ const TypingBox = () => {
   }
 
   useEffect(() => {
+    setCountDown(testTime);
+  }, [testTime])
+
+  useEffect(() => {
     focusInput();
     wordsSpanRef[0].current.childNodes[0].className = "current";
   }, [])
 
   return (
     <div>
-      <UpperMenu />
+      <UpperMenu countDown={countDown}/>
+      {(testEnd) ? <h1>Test over</h1>
+            :
       <div className="type-box" onClick={focusInput}>
         <div className="words">
           {
@@ -147,7 +179,7 @@ const TypingBox = () => {
             ))
           }
         </div>
-      </div>
+      </div>}
       <input
         type="text"
         className='hidden-input'

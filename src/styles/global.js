@@ -82,6 +82,27 @@ body{
 .incorrect{
   color: red;
 }
+
+.upper-menu {
+  display: flex;
+  width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 1.3rem;
+  justify-content: space-between;
+  padding: 0.5rem;
+}
+
+.modes {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.time-mode:hover {
+  color: green;
+  cursor: pointer;
+}
+
 `
 
 // Index:
