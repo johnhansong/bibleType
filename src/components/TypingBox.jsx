@@ -10,6 +10,7 @@ const TypingBox = () => {
   const {testTime} = useTestMode();
   const [wordsArray, setWordsArray] = useState(() => generate(50));
   const [countDown, setCountDown] = useState(testTime);
+  const [intervalId, setIntervalId] = useState(null)
   const [testStart, setTestStart] = useState(false);
   const [testEnd, setTestEnd] = useState(false);
   const [currWordIndex, setCurrWordIndex] = useState(0);
@@ -24,6 +25,7 @@ const TypingBox = () => {
 
   const startTimer = () => {
     const intervalId = setInterval(timer, 1000);
+    setIntervalId(intervalId);
     function timer() {
       setCountDown((latestCountDown) => {
         if (latestCountDown === 1) {
@@ -35,6 +37,27 @@ const TypingBox = () => {
         return latestCountDown-1
       })
     }
+  }
+
+  const resetWordSpanRefClassname = () => {
+    wordsSpanRef?.map(word => {
+      Array.from(word.current.childNodes).map(ltr => {
+        ltr.className = "";
+      });
+    });
+    wordsSpanRef[0].current.childNodes[0].className = 'current'
+  }
+
+  const resetTest = () => {
+    clearInterval(intervalId);
+    setCountDown(testTime);
+    setCurrWordIndex(0);
+    setCurrCharIndex(0);
+    setTestStart(false);
+    setTestEnd(false);
+    setWordsArray(generate(50));
+    resetWordSpanRefClassname();
+    focusInput();
   }
 
   const handleUserInput = (e) => {
@@ -154,7 +177,7 @@ const TypingBox = () => {
   }
 
   useEffect(() => {
-    setCountDown(testTime);
+    resetTest();
   }, [testTime])
 
   useEffect(() => {
