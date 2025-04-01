@@ -2,14 +2,17 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { TestModeContextProvider } from './context/testModeContext';
+import { ThemeContextProvider } from './context/themeContext';
 // import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <TestModeContextProvider>
-      <App />
-    </TestModeContextProvider>
+    <ThemeContextProvider>
+      <TestModeContextProvider>
+        <App />
+      </TestModeContextProvider>
+    </ThemeContextProvider>
   </React.StrictMode>
 );
 
