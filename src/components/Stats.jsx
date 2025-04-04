@@ -1,4 +1,5 @@
 import React from 'react'
+import Graph from './Graph'
 
 const Stats = (
   {wpm,
@@ -27,7 +28,7 @@ const Stats = (
       </div>
 
       <div className="right-stats">
-      {/* {Graph goes here} */}
+        <Graph />
       </div>
     </div>
   )
