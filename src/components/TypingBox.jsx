@@ -3,21 +3,29 @@ import UpperMenu from "./UpperMenu"
 import { useTestMode } from "../context/testModeContext"
 import { createRef, useRef, useState, useEffect, useMemo } from "react"
 import { generate } from "random-words"
+import Stats from "./Stats"
 
 const TypingBox = () => {
-
   const inputRef = useRef(null);
-  const {testTime} = useTestMode();
+
+  //states for initializing test
   const [wordsArray, setWordsArray] = useState(() => generate(50));
-  const [countDown, setCountDown] = useState(testTime);
   const [intervalId, setIntervalId] = useState(null)
-  const [testStart, setTestStart] = useState(false);
-  const [testEnd, setTestEnd] = useState(false);
   const [currWordIndex, setCurrWordIndex] = useState(0);
   const [currCharIndex, setCurrCharIndex] = useState(0);
-  // console.log("currWordIdx", currWordIndex)
-  // console.log("currCharIndex", currCharIndex)
 
+  //States for testing
+  const {testTime} = useTestMode();
+  const [testStart, setTestStart] = useState(false);
+  const [testEnd, setTestEnd] = useState(false);
+  const [countDown, setCountDown] = useState(testTime);
+
+  //States for checking test performance
+  const [correctChars, setCorrectChars] = useState(0);
+  const [incorrectChars, setIncorrectChars] = useState(0);
+  const [missedChars, setMissedChars] = useState(0);
+  const [correctWords, setCorrectWords] = useState(0);
+  const [extraChars, setExtraChars] = useState(0);
 
   const wordsSpanRef = useMemo(() => {
     return Array(wordsArray.length).fill(0).map(i=>createRef(null));
@@ -68,12 +76,18 @@ const TypingBox = () => {
       setTestStart(true);
     }
 
-    const allCurrChars = wordsSpanRef[currWordIndex].current.childNodes;
-    // console.log("allCurrChars", allCurrChars.length)
+    const allCurrChars = wordsSpanRef[currWordIndex]?.current?.childNodes;
 
     //keyCode for space_bar is 32
     if(e.keyCode === 32) {
       //space_bar logic
+
+      let correctCharsInWord = wordsSpanRef[currWordIndex].current.querySelectorAll('.correct')
+
+      if(correctCharsInWord.length === allCurrChars.length) {
+        setCorrectWords(correctWords + 1)
+      }
+
       if(allCurrChars.length <= currCharIndex) {
         //remove cursor from last place in prev word
         allCurrChars[currCharIndex-1].classList.remove('current-right')
@@ -83,6 +97,7 @@ const TypingBox = () => {
         return;
       } else {
         //if space is pressed in a word
+        setMissedChars(missedChars+1)
         allCurrChars[currCharIndex].classList.remove('current')
         allCurrChars[currCharIndex].className = "incorrect";
       }
@@ -124,14 +139,11 @@ const TypingBox = () => {
           }
 
           const prevWordRef = wordsSpanRef[backspaceWordIndex]?.current;
-
           if(!prevWordRef) {
             console.warn("Invalid ref access at index:", backspaceWordIndex)
             return prevWordIndex;
           }
-
           const prevWordCharCount = prevWordRef.childNodes.length;
-
           // preserving this order is crucial to update currCharIndex before
           // trying to access allCurrChars[currCharIndex]
           // prevents accessing an accidental undefined element when switching words
@@ -152,14 +164,17 @@ const TypingBox = () => {
       newSpan.className = "incorrect extra current-right"
       wordsSpanRef[currWordIndex].current.append(newSpan)
       setCurrCharIndex(currCharIndex+1);
+      setExtraChars(extraChars+1)
       return;
     }
 
     //checking if input is correct
     if(e.key === allCurrChars[currCharIndex].innerText) {
       allCurrChars[currCharIndex].className = "correct";
+      setCorrectChars(correctChars+1)
     } else {
       allCurrChars[currCharIndex].className = "incorrect";
+      setIncorrectChars(incorrectChars+1)
     }
 
     if(currCharIndex+1 === allCurrChars.length) {
@@ -171,6 +186,13 @@ const TypingBox = () => {
     setCurrCharIndex((prev) => prev+1);
   }
 
+  const calculateWPM = () => {
+    return Math.round((correctChars/5)/(testTime/60))
+  }
+
+  const calculateAcc = () => {
+    return Math.round((correctWords/currWordIndex)*100)
+  }
 
   const focusInput= () => {
     inputRef.current.focus();
@@ -188,8 +210,19 @@ const TypingBox = () => {
   return (
     <div>
       <UpperMenu countDown={countDown}/>
-      {(testEnd) ? <h1>Test over</h1>
+      {(testEnd) ? (
+        //if test end
+        <Stats
+          wpm={calculateWPM()}
+          accuracy={calculateAcc()}
+          correctChars={correctChars}
+          incorrectChars={incorrectChars}
+          missedChars={missedChars}
+          extraChars={extraChars}
+        />
+      )
             :
+        //if test has not ended
       <div className="type-box" onClick={focusInput}>
         <div className="words">
           {
