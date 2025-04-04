@@ -10,6 +10,7 @@ import {
   Legend
 } from 'chart.js'
 import { Line } from "react-chartjs-2";
+import { useTheme } from "../context/themeContext";
 
 ChartJS.register(
   CategoryScale,
@@ -21,8 +22,8 @@ ChartJS.register(
   Legend
 )
 
-const Graph = () => {
-
+const Graph = ({graphData}) => {
+  const {theme} = useTheme()
 
   return (
     <>
@@ -30,20 +31,15 @@ const Graph = () => {
         data={
           {
             // x-axis
-            labels: [1,2,3,4],
+            labels: graphData.map(i=>i[0]),
 
             // y-axis
             datasets: [
               {
-                data: [3,4,5,6],
-                label: "graph1",
-                borderColor: 'red'
+                data: graphData.map(i=>i[1]),
+                label: "WPM",
+                borderColor: theme.accent
               },
-              {
-                data: [6,7,8,9],
-                label: "graph2",
-                borderColor: "green"
-              }
             ]
           }
         }

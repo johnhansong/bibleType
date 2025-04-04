@@ -1,14 +1,26 @@
 import React from 'react'
 import Graph from './Graph'
 
-const Stats = (
-  {wpm,
-  accuracy,
-  correctChars,
-  incorrectChars,
-  missedChars,
-  extraChars}
+const Stats = ({
+            wpm,
+            accuracy,
+            correctChars,
+            incorrectChars,
+            missedChars,
+            extraChars,
+            graphData
+          }
 ) => {
+
+  let timeSet = new Set();
+  const newGraph = graphData.filter(points => {
+    if (!timeSet.has(points[0])) {
+      timeSet.add(points[0]);
+      return points;
+    }
+  })
+
+
   return (
     <div className="stats-box">
       <div className="left-stats">
@@ -28,7 +40,7 @@ const Stats = (
       </div>
 
       <div className="right-stats">
-        <Graph />
+        <Graph graphData={newGraph} />
       </div>
     </div>
   )

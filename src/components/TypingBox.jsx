@@ -40,11 +40,10 @@ const TypingBox = () => {
         setCorrectChars((correctChars) => {
           setGraphData((graphData) => {
             return [...graphData, [
-              testTime-latestCountDown+1, 
+              testTime-latestCountDown+1,
               (correctChars/5)/(testTime-latestCountDown+1)/60 //WPM Calc
-            ]]
+            ]];
           })
-
           return correctChars;
         })
 
@@ -231,6 +230,7 @@ const TypingBox = () => {
           incorrectChars={incorrectChars}
           missedChars={missedChars}
           extraChars={extraChars}
+          graphData={graphData}
         />
       )
             :
