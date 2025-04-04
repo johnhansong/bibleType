@@ -26,6 +26,7 @@ const TypingBox = () => {
   const [missedChars, setMissedChars] = useState(0);
   const [correctWords, setCorrectWords] = useState(0);
   const [extraChars, setExtraChars] = useState(0);
+  const [graphData, setGraphData] = useState([])
 
   const wordsSpanRef = useMemo(() => {
     return Array(wordsArray.length).fill(0).map(i=>createRef(null));
@@ -36,6 +37,16 @@ const TypingBox = () => {
     setIntervalId(intervalId);
     function timer() {
       setCountDown((latestCountDown) => {
+        setCorrectChars((correctChars) => {
+          setGraphData((graphData) => {
+            return [...graphData, [
+              testTime-latestCountDown+1,
+              (correctChars/5)/(testTime-latestCountDown+1)/60 //WPM Calc
+            ]];
+          })
+          return correctChars;
+        })
+
         if (latestCountDown === 1) {
           setTestEnd(true);
           clearInterval(intervalId);
@@ -219,6 +230,7 @@ const TypingBox = () => {
           incorrectChars={incorrectChars}
           missedChars={missedChars}
           extraChars={extraChars}
+          graphData={graphData}
         />
       )
             :

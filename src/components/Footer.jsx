@@ -23,9 +23,13 @@ const Footer = () => {
           menuPlacement='top'
           styles={{
             control: styles => ({...styles,
-                                  backgroundColor: theme.background,
-                                  color: theme.textColor
-                                }),
+              backgroundColor: theme.background,
+              color: theme.textColor
+            }),
+            placeholder: styles => ({
+              ...styles,
+              color: theme.textColor,
+            }),
             menu: styles => ({...styles,
                               backgroundColor: theme.background,
                             }),
@@ -33,10 +37,6 @@ const Footer = () => {
                 ...styles,
                 backgroundColor: !isFocused ? theme.background : theme.accent,
                 cursor: 'pointer',
-            }),
-            placeholder: styles => ({
-              ...styles,
-              color: theme.textColor,
             }),
             input: styles => ({
               ...styles,
