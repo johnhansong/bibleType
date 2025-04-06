@@ -53,11 +53,31 @@ const tiramisu = {
   incorrect: "#E9632D",
 }
 
+const mochaMatcha = {
+  label: "Mocha Matcha",
+  background: "#523525",
+  textColor: "#EBDCCC",
+  typeBoxText: "#9E6649",
+  accent: "#7EC160",
+  incorrect: "#FB4834"
+}
+
+const strawberryMatchaLatte = {
+  label: "Strawberry Matcha Latte",
+  background: "#EFEAD0",
+  textColor: "#7EC160",
+  typeBoxText: "#F37F83",
+  accent: "#F37F83",
+  incorrect: "#9E6649",
+}
+
 
 export const themeOptions = [
-  {label: 'Space Gray', value: spaceGray},
+  {label: 'City Pop', value: cityPop},
   {label: 'Clay', value: clay},
   {label: 'Midnight', value: midnight},
-  {label: 'City Pop', value: cityPop},
-  {label: 'Tiramisu', value: tiramisu}
+  {label: 'Mocha Matcha', value: mochaMatcha},
+  {label: 'Strawberry Matcha Latte', value: strawberryMatchaLatte},
+  {label: 'Space Gray', value: spaceGray},
+  {label: 'Tiramisu', value: tiramisu},
 ]

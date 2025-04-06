@@ -5,7 +5,7 @@ const ThemeContext = createContext();
 
 export const ThemeContextProvider = ({children}) => {
 
-  const userTheme = JSON.parse(localStorage.getItem('theme')) || themeOptions[0].value
+  const userTheme = JSON.parse(localStorage.getItem('theme')) || themeOptions[5].value
   const [theme, setTheme] = useState(userTheme)
 
   const values = {

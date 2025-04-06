@@ -1,4 +1,5 @@
 import { GlobalStyles } from "./styles/global";
+import Header from "./components/Header";
 import TypingBox from "./components/TypingBox";
 import Footer from "./components/Footer";
 import { ThemeProvider } from "styled-components";
@@ -11,7 +12,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <div className="canvas">
         <GlobalStyles/>
-        <div>Header</div>
+        <Header />
         <TypingBox />
         <Footer />
       </div>

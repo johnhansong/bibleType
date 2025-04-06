@@ -21,12 +21,22 @@ const Footer = () => {
           onChange={handleChange}
           options={themeOptions}
           menuPlacement='top'
+          placeholder={theme.label}
           styles={{
-            control: styles => ({...styles,
+            control: (styles, { isFocused }) => ({...styles,
               backgroundColor: theme.background,
-              color: theme.textColor
+              color: theme.textColor,
+              borderColor: isFocused ? theme.accent : theme.textColor,
+              boxShadow: isFocused ? `0 0 0 1px ${theme.accent}` : 'none',
+              '&:hover': {
+                borderColor: theme.accent,
+              }
             }),
             placeholder: styles => ({
+              ...styles,
+              color: theme.textColor,
+            }),
+            singleValue: styles => ({
               ...styles,
               color: theme.textColor,
             }),
@@ -41,6 +51,13 @@ const Footer = () => {
             input: styles => ({
               ...styles,
               color: theme.textColor,
+            }),
+            dropdownIndicator: styles => ({
+              ...styles,
+              color: theme.textColor,
+              '&:hover': {
+                color: theme.accent,
+              }
             })
           }}
         />
