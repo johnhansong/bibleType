@@ -1,14 +1,15 @@
-import React from 'react'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import LoginForm from './LoginForm'
 import SignupForm from './SignupForm'
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'
-import { Tabs, Tab, AppBar, Modal, Box } from '@mui/material'
 import GoogleButton from 'react-google-button'
-import { signInWithPopup, signInWithRedirect, GoogleAuthProvider } from 'firebase/auth'
+import { auth } from '../firebaseConfig'
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+import { useAuth } from '../context/authContext'
 import errorMapping from '../Utils/errorMapping'
 import { toast } from 'react-toastify'
-import { auth } from '../firebaseConfig'
+import { Tabs, Tab, AppBar, Modal, Box } from '@mui/material'
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'
+import LogoutIcon from '@mui/icons-material/Logout'
 
 import { useTheme } from '../context/themeContext'
 
@@ -16,6 +17,7 @@ const AccountCircle = () => {
   const [openModal, setOpenModal] = useState(false);
   const [value, setValue] = useState(0);
   const { theme } = useTheme()
+  const { user } = useAuth()
 
   const handleValueChange = (e, val) => {
     // We are using MUI component, Tabs, which will go back and forth between the number of tabs we have
@@ -48,12 +50,39 @@ const AccountCircle = () => {
         theme: "dark",
       });
     })
+  }
 
+  const handleLogout = () => {
+    auth.signOut().then((res) => {
+      toast.success("Logged out successfully", {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    }).catch((err) => {
+      toast.error("Unable to log out. Please try again.", {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+    })
   }
 
   return (
     <div>
       <AccountCircleIcon onClick={() => setOpenModal(true)}/>
+
+        {user && <LogoutIcon onClick={handleLogout}/>}
 
       <Modal
         open={openModal}
