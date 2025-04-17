@@ -6,7 +6,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { toast } from 'react-toastify';
 import errorMapping from '../Utils/errorMapping';
 
-const LoginForm = () => {
+const LoginForm = ({handleClose}) => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,6 +39,7 @@ const LoginForm = () => {
         progress: undefined,
         theme: "dark",
       });
+      handleClose();
     } catch (err) {
       toast.error(errorMapping[err.code] || 'Unable to sign in. Please try again.', {
         position: "top-right",

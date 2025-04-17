@@ -8,7 +8,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { toast } from 'react-toastify';
 import errorMapping from '../Utils/errorMapping';
 
-const SignupForm = () => {
+const SignupForm = ({handleClose}) => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,6 +55,7 @@ const SignupForm = () => {
                 progress: undefined,
                 theme: "dark",
               });
+              handleClose();
     } catch (err) {
       toast.error(errorMapping[err.code] || 'Unable to create user. Please try again', {
                 position: "top-right",
@@ -113,7 +114,7 @@ const SignupForm = () => {
           color: theme.textColor
         }}
         onClick={handleSubmit}
-      >Login</Button>
+      >Sign Up</Button>
     </Box>
   )
 }
