@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import LoginForm from './LoginForm'
 import SignupForm from './SignupForm'
 import GoogleButton from 'react-google-button'
@@ -14,6 +15,7 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import { useTheme } from '../context/themeContext'
 
 const AccountCircle = () => {
+  const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
   const [value, setValue] = useState(0);
   const { theme } = useTheme()
@@ -23,6 +25,18 @@ const AccountCircle = () => {
     // We are using MUI component, Tabs, which will go back and forth between the number of tabs we have
     // in this case 0 and 1
     setValue(val)
+  }
+
+  const handleModalOpen = () => {
+    if (user) {
+      navigate('/user')
+    } else {
+      setOpenModal(true)
+    }
+  }
+
+  const handleModalClose = () => {
+    setOpenModal(false)
   }
 
   const googleProvider = new GoogleAuthProvider();
@@ -38,6 +52,7 @@ const AccountCircle = () => {
         progress: undefined,
         theme: "dark",
       });
+      handleModalClose();
     }).catch((err) => {
       toast.error(errorMapping[err.code] || 'An error occurred. Please try again.', {
         position: "top-right",
@@ -130,8 +145,8 @@ const AccountCircle = () => {
               ></Tab>
             </Tabs>
           </AppBar>
-          {value === 0 && <LoginForm />}
-          {value === 1 && <SignupForm />}
+          {value === 0 && <LoginForm handleClose={handleModalClose}/>}
+          {value === 1 && <SignupForm handleClose={handleModalClose}/>}
 
           <Box
             style={{
