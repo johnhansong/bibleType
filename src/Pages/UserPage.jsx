@@ -9,6 +9,7 @@ import UserTable from "../components/UserTable";
 const UserPage = () => {
   const navigate = useNavigate()
   const [userData, setUserData] = useState([])
+  const [graphData, setGraphData] = useState([])
   const { user, loading } = useAuth()
 
   const fetchUserData = async () => {
@@ -16,10 +17,15 @@ const UserPage = () => {
       const resultsRef = collection(db, 'Results');
       const filteredResults = query(resultsRef, where('userId', '==', user.uid))
       const snapshot = await getDocs(filteredResults);
-      const tempData = []
+      let tempData = []
+      let tempGraphData = []
 
-      snapshot.forEach(doc => {tempData.push(doc.data())})
+      snapshot.forEach(doc => {
+        tempData.push(doc.data())
+        tempGraphData.push([doc.data().timeStamp, doc.data().wpm])
+      })
       setUserData(tempData)
+      setGraphData(tempGraphData)
 
     } catch (error) {
       console.error("Error fetching user data: ", error)
