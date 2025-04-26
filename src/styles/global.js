@@ -146,6 +146,53 @@ body{
   margin-left: auto;
   margin-right: auto;
 }
+
+.user-profile {
+  width: 1000px;
+  margin: auto;
+  margin-bottom: 10px;
+  display: flex;
+  height: 12rem;
+  background: ${({theme}) => theme.typeBoxText};
+  border-radius: 20px;
+  padding: 1.25rem;
+  justify-content: center;
+  align-text: center;
+}
+
+.user {
+  width: 50%;
+  display: flex;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  font-size: 1.25rem;
+  padding: 1rem;
+  border-right: 2px solid;
+}
+
+.info {
+  width: 60%;
+  padding: 1rem;
+}
+
+.picture {
+  width: 40%
+}
+
+.total-tests {
+  width: 50%;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table, .graph-user-page {
+  margin: auto;
+  width: 1000px;
+}
+
+
 `
 
 // Index:

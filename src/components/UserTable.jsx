@@ -26,8 +26,8 @@ const UserTable = ({data}) => {
 
           <TableBody>
             {
-              data?.map((i) => (
-                <TableRow>
+              data?.map((i, index) => (
+                <TableRow key={index}>
                   <TableCell style={tableStyles}>
                     {i.wpm}
                   </TableCell>
