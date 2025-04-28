@@ -35,6 +35,29 @@ body{
   margin-right: auto;
 }
 
+.blurred {
+  filter: blur(5px);
+  transition: filter 0.3s ease;
+}
+
+.overlay {
+  position: absolute;
+  top: 8%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.overlay-text {
+  font-size: 32px;
+  color: ${({theme}) => theme.textColor};
+  opacity: 100%;
+}
+
 .words{
   font-size: 32px;
   display: flex;
@@ -145,6 +168,19 @@ body{
   justify-content: space-between;
   margin-left: auto;
   margin-right: auto;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-text {
+  margin-left: 15px;
+  font-size: 26px;
+  color: ${({theme}) => theme.textColor}
 }
 
 .user-profile {

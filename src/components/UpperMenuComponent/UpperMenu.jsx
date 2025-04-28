@@ -1,18 +1,18 @@
 import React from "react";
-import { useTestMode } from "../context/testModeContext";
+import { useTestMode } from "../../context/testModeContext";
 
-const UpperMenu = ({countDown}) => {
-
-  const {setTestTime} = useTestMode();
+const UpperMenu = ({payload}) => {
+  const { setTestTime } = useTestMode();
 
   const updateTime = (e) => {
     setTestTime(Number(e.target.id))
   }
 
+
   return (
     <div className='upper-menu'>
       <div className="counter">
-        {countDown}
+        {payload}
       </div>
 
       <div className="modes">

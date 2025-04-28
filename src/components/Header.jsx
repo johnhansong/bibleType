@@ -1,19 +1,30 @@
 import React from "react"
 import AccountCircle from "./AccountCircle"
 
+
 const Header = () => {
 
   return (
     <div className="header">
-      <div className="logo">
-        LOGO
-      </div>
+      <a className="logo" href="/">
+        <img
+          src="/bible_icon.png"
+          alt="Bible Icon"
+          style={{
+            width: "70px",
+            height: "70px",
+          }}
+        />
+        <div className="logo-text">
+          Letters by Paul
+        </div>
+      </a>
 
       <div className="user-icon">
         <AccountCircle />
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default Header

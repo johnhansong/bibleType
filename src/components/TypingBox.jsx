@@ -1,5 +1,5 @@
 import React from "react"
-import UpperMenu from "./UpperMenu"
+import UpperMenu from "./UpperMenuComponent/UpperMenu"
 import { useTestMode } from "../context/testModeContext"
 import { createRef, useRef, useState, useEffect, useMemo } from "react"
 import { generate } from "random-words"
@@ -7,6 +7,7 @@ import Stats from "./Stats"
 
 const TypingBox = () => {
   const inputRef = useRef(null);
+  const [testFocus, setTestFocus] = useState(false)
 
   //states for initializing test
   const [wordsArray, setWordsArray] = useState(() => generate(50));
@@ -80,6 +81,9 @@ const TypingBox = () => {
   }
 
   const handleUserInput = (e) => {
+    if (testEnd) {
+      return;
+    }
 
     if (!testStart) {
       // if test has not started upon initial key press, start timer and test start
@@ -205,7 +209,7 @@ const TypingBox = () => {
     return Math.round((correctWords/currWordIndex)*100)
   }
 
-  const focusInput= () => {
+  const focusInput = () => {
     inputRef.current.focus();
   }
 
@@ -220,26 +224,31 @@ const TypingBox = () => {
 
   return (
     <div>
-      <UpperMenu countDown={countDown}/>
       {(testEnd) ? (
         //if test end
         <Stats
-          wpm={calculateWPM()}
-          accuracy={calculateAcc()}
-          correctChars={correctChars}
-          incorrectChars={incorrectChars}
-          missedChars={missedChars}
-          extraChars={extraChars}
-          graphData={graphData}
+        wpm={calculateWPM()}
+        accuracy={calculateAcc()}
+        correctChars={correctChars}
+        incorrectChars={incorrectChars}
+        missedChars={missedChars}
+        extraChars={extraChars}
+        graphData={graphData}
         />
       )
-            :
-        //if test has not ended
+      :
+      //if test has not ended
       <div className="type-box" onClick={focusInput}>
-        <div className="words">
+      <UpperMenu payload={countDown}/>
+        {!testFocus && (
+          <div className="overlay">
+            <div className="overlay-text">Click to Focus</div>
+          </div>
+        )}
+        <div className={`words ${!testFocus ? 'blurred' : ''}`}>
           {
             wordsArray.map((word, index) => (
-              <span className="word" ref={wordsSpanRef[index]}>
+              <span className="word" ref={wordsSpanRef[index]} key={index}>
                 {word.split('').map(char => (
                   <span>{char}</span>
                 ))}
@@ -248,11 +257,14 @@ const TypingBox = () => {
           }
         </div>
       </div>}
+
       <input
         type="text"
         className='hidden-input'
         ref={inputRef}
         onKeyDown={handleUserInput}
+        onFocus={() => setTestFocus(true)}
+        onBlur={() => setTestFocus(false)}
       />
     </div>
   )
