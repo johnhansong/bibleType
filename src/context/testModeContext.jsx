@@ -7,13 +7,38 @@ export const TestModeContextProvider = ({children}) => {
     return localStorage.getItem("mode") || "time";
   })
   // modes = [time, words, passage]
-  const [testTime, setTestTime] = useState(15)
-  const [wordCount, setWordCount] = useState(25)
-  const [passage, setPassage] = useState({})
+  const [testTime, setTestTime] = useState(() => Number(localStorage.getItem("testMode.testTime")) || 15)
+  const [wordCount, setWordCount] = useState(() => Number(localStorage.getItem("testMode.wordCount")) || 25)
+  const [passage, setPassage] = useState(() => {
+    const stored = localStorage.getItem("testMode.passage");
+    try {
+      return stored ? JSON.parse(stored) : {Book: "Ephesians", Chapter: 2, Verse: 4}
+    } catch (e) {
+      console.warn("Corrupted passage data in localStorage. Reverting to default.")
+      localStorage.removeItem("testMode.passage");
+      return {Book: "Ephesians", Chapter: 2, Verse: 4}
+    }
+  });
 
+  // Save Mode
   useEffect(() => {
     localStorage.setItem("mode", mode);
   }, [mode])
+
+  // Save test time
+  useEffect(() => {
+    localStorage.setItem("testMode.testTime", testTime)
+  }, [testTime])
+
+  // save word count
+  useEffect(() => {
+    localStorage.setItem("testMode.wordCount", wordCount)
+  }, [wordCount])
+
+  // save passage
+  useEffect(() => {
+    localStorage.setItem("testMode.passage", JSON.stringify(passage))
+  }, [passage])
 
   const value = {
     mode,

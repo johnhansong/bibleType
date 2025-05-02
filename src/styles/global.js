@@ -7,7 +7,7 @@ export const GlobalStyles = createGlobalStyle`
   box-sizing: border-box;
 }
 
-body{
+body {
   background: ${({theme}) => theme.background};
   color: ${({theme}) => theme.textColor};
   margin: 0;
@@ -15,13 +15,19 @@ body{
   transition: all 0.25s linear;
 }
 
+.type-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .canvas{
   display: grid;
   min-height: 100vh;
   grid-auto-flow: row;
-  grid-template-row: auto 1fr auto;
-  gap: 0.5 rem;
-  padding: 2rem;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.5rem;
+  padding: 0 2rem 2rem 2rem;
   width: 100vw;
   align-items: center;
   text-align: center;
@@ -30,9 +36,9 @@ body{
 .type-box{
   display: block;
   max-width: 1000px;
-  height: 140px;
-  margin-left: auto;
-  margin-right: auto;
+  min-height: 140px;
+  height: auto;
+  margin: 0;
 }
 
 .blurred {
@@ -112,12 +118,15 @@ body{
   width: 1000px;
   margin-left: auto;
   margin-right: auto;
+  margin-bottom: 50px;
+  background-color: ${({theme}) => theme.background};
+  opacity: 0.8;
   font-size: 1.3rem;
   justify-content: space-between;
   padding: 0.5rem;
 }
 
-.modes {
+.time-modes {
   display: flex;
   gap: 0.4rem;
 }
@@ -126,6 +135,12 @@ body{
   color: ${({theme}) => theme.accent};
   cursor: pointer;
   transition: all 0.25s;
+}
+
+.counter {
+  display: flex;
+  padding: 5px;
+  font-size: 26px;
 }
 
 .footer {

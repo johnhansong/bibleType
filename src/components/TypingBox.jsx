@@ -16,7 +16,7 @@ const TypingBox = () => {
   const [currCharIndex, setCurrCharIndex] = useState(0);
 
   //States for testing
-  const {testTime} = useTestMode();
+  const {mode, testTime} = useTestMode();
   const [testStart, setTestStart] = useState(false);
   const [testEnd, setTestEnd] = useState(false);
   const [countDown, setCountDown] = useState(testTime);
@@ -223,7 +223,7 @@ const TypingBox = () => {
   }, [])
 
   return (
-    <div>
+    <div className="type-body">
       {(testEnd) ? (
         //if test end
         <Stats
@@ -245,6 +245,7 @@ const TypingBox = () => {
             <div className="overlay-text">Click to Focus</div>
           </div>
         )}
+        {mode === 'time' && <span className={`counter ${!testFocus ? 'blurred' : ''}`}>{countDown}</span>}
         <div className={`words ${!testFocus ? 'blurred' : ''}`}>
           {
             wordsArray.map((word, index) => (
