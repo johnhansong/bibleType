@@ -35,7 +35,7 @@ body {
 
 .type-box{
   display: block;
-  max-width: 1000px;
+  max-width: 900px;
   min-height: 140px;
   height: auto;
   margin: 0;
@@ -65,7 +65,7 @@ body {
 }
 
 .words{
-  font-size: 32px;
+  font-size: 28px;
   display: flex;
   flex-wrap: wrap;
   color: ${({theme}) => theme.typeBoxText}
@@ -111,30 +111,6 @@ body {
 
 .incorrect{
   color: ${({theme}) => theme.incorrect};
-}
-
-.upper-menu {
-  display: flex;
-  width: 1000px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 50px;
-  background-color: ${({theme}) => theme.background};
-  opacity: 0.8;
-  font-size: 1.3rem;
-  justify-content: space-between;
-  padding: 0.5rem;
-}
-
-.time-modes {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.time-mode:hover {
-  color: ${({theme}) => theme.accent};
-  cursor: pointer;
-  transition: all 0.25s;
 }
 
 .counter {
@@ -243,7 +219,19 @@ body {
   width: 1000px;
 }
 
+.upper-menu {
+  border: 2px solid ${({theme}) => theme.typeBoxText};
+  border-radius: 5px;
+}
 
+.mode:hover{
+  cursor: pointer;
+  color: ${({theme}) => theme.typeBoxText};
+}
+
+.selected_mode {
+  color: ${({theme}) => theme.accent}
+}
 `
 
 // Index:

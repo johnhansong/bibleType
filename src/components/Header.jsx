@@ -16,7 +16,7 @@ const Header = () => {
           }}
         />
         <div className="logo-text">
-          Letters by Paul
+          Bible Type
         </div>
       </a>
 

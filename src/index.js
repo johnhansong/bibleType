@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { TestModeContextProvider } from './context/testModeContext';
 import { ThemeContextProvider } from './context/themeContext';
+import { BibleProvider } from './context/bibleContext';
 import { BrowserRouter } from 'react-router-dom';
 // import reportWebVitals from './reportWebVitals';
 
@@ -11,9 +12,11 @@ root.render(
   <React.StrictMode>
     <ThemeContextProvider>
       <TestModeContextProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <BibleProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </BibleProvider>
       </TestModeContextProvider>
     </ThemeContextProvider>
   </React.StrictMode>
