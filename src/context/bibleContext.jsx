@@ -3,7 +3,15 @@ import { useEffect, useState, useContext, createContext } from "react";
 export const BibleContext = createContext();
 
 export const BibleProvider = ({ children }) => {
-  const [selectedBook, setSelectedBook] = useState(localStorage.getItem("") || '')
+  const [selectedBook, setSelectedBook] = useState( () => {
+    const randomBookIndex = Math.floor(Math.random()*66) + 1
+    return localStorage.getItem("bibleVersion") || randomBookIndex
+  })
+
+  useEffect(() => {
+    localStorage.setItem("bibleBook", selectedBook)
+  }, [selectedBook])
+
   const [selectedChapter, setSelectedChapter] = useState('')
   const [verseStart, setVerseStart] = useState('')
   const [verseEnd, setVerseEnd] = useState('')
@@ -20,8 +28,9 @@ export const BibleProvider = ({ children }) => {
     sessionStorage.getItem('bibleVersion', bibleVersion);
   }, [bibleVersion]);
 
+
   useEffect(() => {
-    const passage_chapter = fetch()
+    const passage_chapter = fetch(`https://bolls.life/get-text/${bibleVersion}/${selectedBook}/${selectedChapter}/`)
   })
 
   return (
