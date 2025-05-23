@@ -49,9 +49,6 @@ export const TestModeContextProvider = ({children}) => {
 
     wordCount,
     setWordCount,
-
-    passage,
-    setPassage,
   }
 
   return (
