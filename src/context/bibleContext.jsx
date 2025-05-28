@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext, createContext } from "react";
 import bibleData from '../assets/bibleMetadata.json'
+import { useTestMode } from "./testModeContext";
 
 export const BibleContext = createContext();
 
@@ -19,6 +20,7 @@ export const BibleContext = createContext();
 //   }
 
 export const BibleProvider = ({ children }) => {
+  const { mode } = useTestMode();
   /// SELECT/SET BOOK
   const [selectedBook, setSelectedBook] = useState( () => {
     const randomBookIndex = Math.floor(Math.random()*66) + 1
@@ -33,8 +35,7 @@ export const BibleProvider = ({ children }) => {
     if (!localStorage.getItem("bibleChapter")) {
       const numberOfChapters = bibleData[selectedBook]["chapters"].length
       return Math.floor(Math.random()*numberOfChapters) + 1
-    }
-    else {
+    } else {
       return localStorage.getItem("bibleChapter")
     }
   })
@@ -59,9 +60,33 @@ export const BibleProvider = ({ children }) => {
     sessionStorage.getItem('bibleVersion', bibleVersion);
   }, [bibleVersion]);
 
-  // useEffect(() => {
-  //   const passage_chapter = fetch(`https://bolls.life/get-text/${bibleVersion}/${selectedBook}/${selectedChapter}/`)
-  // }, [])
+  useEffect(() => {
+    const fetchPassage = async () => {
+      try {
+        const response = await fetch(`https://bolls.life/get-text/${bibleVersion}/${selectedBook}/${selectedChapter}/`)
+        // console.log("response", response)
+        const data = await response.json();
+        console.log("data", data)
+        const cleanedVerses = data.map(verse => {
+          const html = verse.text;
+          const parts = html.split(/<br\s*\/?>/i);
+          return parts[1] ? parts[1].trim() : "";
+        })
+
+        const fullText = cleanedVerses.join(" ")
+
+        /// regex to split on whitespace including tabs and newlines
+        setVerseContent(fullText.split(/[\s—]+/))
+
+      } catch (error) {
+        console.error("Failed to fetch passage: ", error)
+        setVerseContent(["Please", "select", 'a', 'passage'])
+      }
+    }
+    fetchPassage()
+  }, [mode, selectedChapter])
+
+
 
   return (
     <BibleContext.Provider value={{

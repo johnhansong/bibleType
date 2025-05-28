@@ -227,6 +227,19 @@ body {
 .mode:hover{
   cursor: pointer;
   color: ${({theme}) => theme.typeBoxText};
+  transition: 0.3s ease;
+}
+
+.time-mode:hover{
+  cursor: pointer;
+  color: ${({theme}) => theme.typeBoxText};
+  transition: 0.3s ease;
+}
+
+.word-mode:hover{
+  cursor: pointer;
+  color: ${({theme}) => theme.typeBoxText};
+  transition: 0.3s ease;
 }
 
 .selected_mode {

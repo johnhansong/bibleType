@@ -16,7 +16,7 @@ const Footer = () => {
       <div className="links">
         links
       </div>
-      
+
       <div className="footer-dropdowns">
         <div className="versionButton">
 

@@ -1,7 +1,9 @@
 import React from "react";
+import Select from 'react-select'
 import { useTestMode } from "../../context/testModeContext";
 import { useTheme } from "../../context/themeContext";
 import { useBible } from "../../context/bibleContext";
+import bibleData from '../../assets/bibleMetadata.json'
 import "./UpperMenu.css"
 
 const UpperMenu = ({payload}) => {
@@ -10,9 +12,10 @@ const UpperMenu = ({payload}) => {
     mode,
     setMode,
 
+    testTime,
     setTestTime,
+    wordCount,
     setWordCount,
-    setPassage,
   } = useTestMode();
 
   const {
@@ -29,12 +32,15 @@ const UpperMenu = ({payload}) => {
   }
 
   const updateWords = (e) => {
-    setWordCount(e.target.id)
+    setWordCount(Number(e.target.id))
   }
 
   const handleMode = (newMode) => {
     setMode(newMode)
   }
+
+  const bibleBooks = Object.values(bibleData)
+    .map(book => book.name)
 
   return (
     <div className='upper-menu'
@@ -59,29 +65,53 @@ const UpperMenu = ({payload}) => {
 
       { mode === "time" &&
         <div className="time-modes">
-          <div className="time-mode" id={15} onClick={updateTime}>15s</div>
-          <div className="time-mode" id={30} onClick={updateTime}>30s</div>
-          <div className="time-mode" id={60} onClick={updateTime}>60s</div>
+          <div
+            className={`time-mode ${testTime === 15 ? " selected_mode" : ""}`}
+            id={15}
+            onClick={updateTime}
+          >15s</div>
+          <div
+            className={`time-mode ${testTime === 30 ? " selected_mode" : ""}`}
+            id={30}
+            onClick={updateTime}
+          >30s</div>
+          <div
+            className={`time-mode ${testTime === 60 ? " selected_mode" : ""}`}
+            id={60}
+            onClick={updateTime}
+          >60s</div>
         </div>
       }
 
       { mode === "words" &&
         <div className="word-modes">
-          <div className="word-mode" id={10} onClick={updateWords}>10</div>
-          <div className="word-mode" id={25} onClick={updateWords}>25</div>
-          <div className="word-mode" id={50} onClick={updateWords}>50</div>
+          <div
+            className={`word-mode ${wordCount === 10 ? " selected_mode" : ""}`}
+            id={10}
+            onClick={updateWords}
+          >10</div>
+          <div
+            className={`word-mode ${wordCount === 25 ? " selected_mode" : ""}`}
+            id={25}
+            onClick={updateWords}
+          >25</div>
+          <div
+            className={`word-mode ${wordCount === 50 ? " selected_mode" : ""}`}
+            id={50}
+            onClick={updateWords}
+          >50</div>
         </div>
       }
 
       { mode === "passage" &&
       <div className="bible_select_row">
-        <select>
-          Book
-          <option></option>
-        </select>
-        <select>
-
-        </select>
+        <Select
+          options={bibleBooks}
+          placeholder="Book"
+        />
+        <Select
+          placeholder="Chapter"
+        />
       </div>
       }
 

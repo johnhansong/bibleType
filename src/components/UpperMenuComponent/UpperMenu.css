@@ -1,5 +1,6 @@
 .upper-menu {
   display: flex;
+  flex-direction: row;
   width: 900px;
   margin-left: auto;
   margin-right: auto;
@@ -34,4 +35,9 @@
 
 .mode {
   padding-right: 10px;
+}
+
+.bible_select_row {
+  display: flex;
+  size: 14px;
 }

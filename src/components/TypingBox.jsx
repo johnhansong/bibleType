@@ -1,22 +1,26 @@
 import React from "react"
 import UpperMenu from "./UpperMenuComponent/UpperMenu"
 import { useTestMode } from "../context/testModeContext"
+import { useBible } from "../context/bibleContext"
 import { createRef, useRef, useState, useEffect, useMemo } from "react"
 import { generate } from "random-words"
 import Stats from "./Stats"
 
 const TypingBox = () => {
+  // context
+  const {mode, testTime, wordCount} = useTestMode();
+  const {verseContent} = useBible();
+
   const inputRef = useRef(null);
   const [testFocus, setTestFocus] = useState(false)
 
   //states for initializing test
   const [wordsArray, setWordsArray] = useState(() => generate(50));
-  const [intervalId, setIntervalId] = useState(null)
+  const [intervalId, setIntervalId] = useState(null);
   const [currWordIndex, setCurrWordIndex] = useState(0);
   const [currCharIndex, setCurrCharIndex] = useState(0);
 
   //States for testing
-  const {mode, testTime} = useTestMode();
   const [testStart, setTestStart] = useState(false);
   const [testEnd, setTestEnd] = useState(false);
   const [countDown, setCountDown] = useState(testTime);
@@ -29,8 +33,24 @@ const TypingBox = () => {
   const [extraChars, setExtraChars] = useState(0);
   const [graphData, setGraphData] = useState([])
 
+  useEffect(() => {
+    if (mode === "time") {
+      setWordsArray(generate(50))
+    } else if (mode === "words") {
+      setWordsArray(generate(wordCount))
+    } else {
+      setWordsArray(generate(50))
+    }
+  }, [mode, wordCount])
+
+  useEffect(() => {
+    if (mode === "passage" && verseContent && verseContent.length > 0) {
+      setWordsArray(verseContent)
+    }
+  }, [mode, verseContent])
+
   const wordsSpanRef = useMemo(() => {
-    return Array(wordsArray.length).fill(0).map(i=>createRef(null));
+    return Array(wordsArray?.length).fill(0).map(i=>createRef(null));
   }, [wordsArray]);
 
   const startTimer = () => {
@@ -68,24 +88,48 @@ const TypingBox = () => {
     wordsSpanRef[0].current.childNodes[0].className = 'current'
   }
 
+
   const resetTest = () => {
-    clearInterval(intervalId);
-    setCountDown(testTime);
+    if (mode === "time") {
+      clearInterval(intervalId);
+      setCountDown(testTime);
+      setWordsArray(generate(50));
+    }
+
+    if (mode === "words") {
+      setWordsArray(generate(wordCount))
+    }
+
+    if (mode === "passage") {
+      setWordsArray(verseContent)
+    }
+
     setCurrWordIndex(0);
     setCurrCharIndex(0);
     setTestStart(false);
     setTestEnd(false);
-    setWordsArray(generate(50));
     resetWordSpanRefClassname();
     focusInput();
   }
 
   const handleUserInput = (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key.length > 1 && e.key !== "Backspace" && e.key !== " ") return;
+
+    const isLetter = /^[a-zA-Z]/.test(e.key)
+    const isPunctuation = /^[.,?!;:'"()\[\]{}\-–—…]$/.test(e.key)
+    const isSpace = e.key === " ";
+
+    if (!isLetter && !isPunctuation && !isSpace) {
+      e.preventDefault()
+    }
+
+
     if (testEnd) {
       return;
     }
 
-    if (!testStart) {
+    if (!testStart && mode === "time") {
       // if test has not started upon initial key press, start timer and test start
       startTimer();
       setTestStart(true);
@@ -238,26 +282,29 @@ const TypingBox = () => {
       )
       :
       //if test has not ended
-      <div className="type-box" onClick={focusInput}>
-      <UpperMenu payload={countDown}/>
-        {!testFocus && (
-          <div className="overlay">
-            <div className="overlay-text">Click to Focus</div>
+      <div>
+        <div className="type-box" onClick={focusInput}>
+          <UpperMenu payload={countDown}/>
+          {!testFocus && (
+            <div className="overlay" >
+              <div className="overlay-text">Click to Focus</div>
+            </div>
+          )}
+          {mode === 'time' && <span className={`counter ${!testFocus ? 'blurred' : ''}`}>{countDown}</span>}
+          <div className={`words ${!testFocus ? 'blurred' : ''}`}>
+            {
+              wordsArray?.map((word, index) => (
+                <span className="word" ref={wordsSpanRef[index]} key={index}>
+                  {word.split('').map(char => (
+                    <span>{char}</span>
+                  ))}
+                </span>
+              ))
+            }
           </div>
-        )}
-        {mode === 'time' && <span className={`counter ${!testFocus ? 'blurred' : ''}`}>{countDown}</span>}
-        <div className={`words ${!testFocus ? 'blurred' : ''}`}>
-          {
-            wordsArray.map((word, index) => (
-              <span className="word" ref={wordsSpanRef[index]} key={index}>
-                {word.split('').map(char => (
-                  <span>{char}</span>
-                ))}
-              </span>
-            ))
-          }
         </div>
-      </div>}
+      </div>
+      }
 
       <input
         type="text"
