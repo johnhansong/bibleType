@@ -24,6 +24,7 @@ const TypingBox = () => {
   const [testStart, setTestStart] = useState(false);
   const [testEnd, setTestEnd] = useState(false);
   const [countDown, setCountDown] = useState(testTime);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   //States for checking test performance
   const [correctChars, setCorrectChars] = useState(0);
@@ -53,30 +54,34 @@ const TypingBox = () => {
     return Array(wordsArray?.length).fill(0).map(i=>createRef(null));
   }, [wordsArray]);
 
+  console.log("WORDSSPANREF", wordsSpanRef)
+
+
   const startTimer = () => {
-    const intervalId = setInterval(timer, 1000);
-    setIntervalId(intervalId);
-    function timer() {
-      setCountDown((latestCountDown) => {
-        setCorrectChars((correctChars) => {
-          setGraphData((graphData) => {
-            return [...graphData, [
-              testTime-latestCountDown+1,
-              (correctChars/5)/(testTime-latestCountDown+1)/60 //WPM Calc
-            ]];
-          })
-          return correctChars;
-        })
-
-        if (latestCountDown === 1) {
-          setTestEnd(true);
-          clearInterval(intervalId);
-          return 0;
-        }
-
-        return latestCountDown-1
-      })
-    }
+    let seconds = 0
+    const intervalId = setInterval(() => {
+      seconds += 1
+      setCorrectChars((correctChars) => {
+        setGraphData((graphData) => {
+          const wpm = (correctChars / 5) / (seconds / 60);
+          return [...graphData, [seconds, Math.round(wpm)]]
+        });
+        return correctChars;
+      });
+      if (mode === "time") {
+        setCountDown((prev) => {
+          if (prev === 1) {
+            clearInterval(intervalId);
+            setTestEnd(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      } else if (mode === "words" || mode === "passage") {
+        setElapsedTime(seconds);
+      }
+    }, 1000);
+    setIntervalId(intervalId)
   }
 
   const resetWordSpanRefClassname = () => {
@@ -106,6 +111,7 @@ const TypingBox = () => {
 
     setCurrWordIndex(0);
     setCurrCharIndex(0);
+    setElapsedTime(0)
     setTestStart(false);
     setTestEnd(false);
     resetWordSpanRefClassname();
@@ -129,7 +135,7 @@ const TypingBox = () => {
       return;
     }
 
-    if (!testStart && mode === "time") {
+    if (!testStart) {
       // if test has not started upon initial key press, start timer and test start
       startTimer();
       setTestStart(true);
@@ -141,6 +147,13 @@ const TypingBox = () => {
     if(e.keyCode === 32) {
       //space_bar logic
 
+
+      if (currCharIndex === wordsSpanRef.length - 1) {
+        setTestEnd(true);
+        clearInterval(intervalId);
+        return;
+      }
+
       let correctCharsInWord = wordsSpanRef[currWordIndex].current.querySelectorAll('.correct')
 
       if(correctCharsInWord.length === allCurrChars.length) {
@@ -148,6 +161,13 @@ const TypingBox = () => {
       }
 
       if(allCurrChars.length <= currCharIndex) {
+        // End test if last word was typed
+        if (currWordIndex + 1 >= wordsSpanRef.length) {
+          setTestEnd(true);
+          clearInterval(intervalId);
+          return;
+        }
+
         //remove cursor from last place in prev word
         allCurrChars[currCharIndex-1].classList.remove('current-right')
         wordsSpanRef[currWordIndex+1].current.childNodes[0].className = "current";

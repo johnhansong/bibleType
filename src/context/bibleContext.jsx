@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext, createContext } from "react";
 import bibleData from '../assets/bibleMetadata.json'
 import { useTestMode } from "./testModeContext";
+import { isTitle } from "../Utils/bibleUtils";
 
 export const BibleContext = createContext();
 
@@ -24,7 +25,7 @@ export const BibleProvider = ({ children }) => {
   /// SELECT/SET BOOK
   const [selectedBook, setSelectedBook] = useState( () => {
     const randomBookIndex = Math.floor(Math.random()*66) + 1
-    return localStorage.getItem("bibleVersion") || randomBookIndex
+    return localStorage.getItem("bibleBook") || randomBookIndex
   })
   useEffect(() => {
     localStorage.setItem("bibleBook", selectedBook)
@@ -34,6 +35,7 @@ export const BibleProvider = ({ children }) => {
   const [selectedChapter, setSelectedChapter] = useState(() => {
     if (!localStorage.getItem("bibleChapter")) {
       const numberOfChapters = bibleData[selectedBook]["chapters"].length
+      console.log("number of chapters", numberOfChapters)
       return Math.floor(Math.random()*numberOfChapters) + 1
     } else {
       return localStorage.getItem("bibleChapter")
@@ -41,7 +43,7 @@ export const BibleProvider = ({ children }) => {
   })
   useEffect(() => {
     localStorage.setItem("bibleChapter", selectedChapter)
-  }, [selectedChapter])
+  }, [selectedBook, selectedChapter])
 
   /// SELECT/SET VERSE(S)
   const [verseStart, setVerseStart] = useState('')
@@ -64,20 +66,22 @@ export const BibleProvider = ({ children }) => {
     const fetchPassage = async () => {
       try {
         const response = await fetch(`https://bolls.life/get-text/${bibleVersion}/${selectedBook}/${selectedChapter}/`)
-        // console.log("response", response)
         const data = await response.json();
-        console.log("data", data)
-        const cleanedVerses = data.map(verse => {
-          const html = verse.text;
+
+        const cleanedVerses = data?.flatMap(verse => {
+          const html = verse.text || "";
           const parts = html.split(/<br\s*\/?>/i);
-          return parts[1] ? parts[1].trim() : "";
+          const [maybeTitle, ... rest] = parts;
+
+          const contentParts = isTitle(maybeTitle) ? rest : [maybeTitle, ...rest];
+
+          return contentParts.map(part => {
+            return part.replace(/<[^>]+>/g, '').trim()
+          })
         })
 
         const fullText = cleanedVerses.join(" ")
-
-        /// regex to split on whitespace including tabs and newlines
         setVerseContent(fullText.split(/[\s—]+/))
-
       } catch (error) {
         console.error("Failed to fetch passage: ", error)
         setVerseContent(["Please", "select", 'a', 'passage'])
