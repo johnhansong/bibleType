@@ -7,7 +7,7 @@ export const GlobalStyles = createGlobalStyle`
   box-sizing: border-box;
 }
 
-body{
+body {
   background: ${({theme}) => theme.background};
   color: ${({theme}) => theme.textColor};
   margin: 0;
@@ -15,13 +15,19 @@ body{
   transition: all 0.25s linear;
 }
 
+.type-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .canvas{
   display: grid;
   min-height: 100vh;
   grid-auto-flow: row;
-  grid-template-row: auto 1fr auto;
-  gap: 0.5 rem;
-  padding: 2rem;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.5rem;
+  padding: 0 2rem 2rem 2rem;
   width: 100vw;
   align-items: center;
   text-align: center;
@@ -29,14 +35,37 @@ body{
 
 .type-box{
   display: block;
-  max-width: 1000px;
-  height: 140px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 900px;
+  min-height: 140px;
+  height: auto;
+  margin: 0;
+}
+
+.blurred {
+  filter: blur(5px);
+  transition: filter 0.3s ease;
+}
+
+.overlay {
+  position: absolute;
+  top: 8%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.overlay-text {
+  font-size: 32px;
+  color: ${({theme}) => theme.textColor};
+  opacity: 100%;
 }
 
 .words{
-  font-size: 32px;
+  font-size: 28px;
   display: flex;
   flex-wrap: wrap;
   color: ${({theme}) => theme.typeBoxText}
@@ -84,25 +113,10 @@ body{
   color: ${({theme}) => theme.incorrect};
 }
 
-.upper-menu {
+.counter {
   display: flex;
-  width: 1000px;
-  margin-left: auto;
-  margin-right: auto;
-  font-size: 1.3rem;
-  justify-content: space-between;
-  padding: 0.5rem;
-}
-
-.modes {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.time-mode:hover {
-  color: ${({theme}) => theme.accent};
-  cursor: pointer;
-  transition: all 0.25s;
+  padding: 5px;
+  font-size: 26px;
 }
 
 .footer {
@@ -145,6 +159,19 @@ body{
   justify-content: space-between;
   margin-left: auto;
   margin-right: auto;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-text {
+  margin-left: 15px;
+  font-size: 26px;
+  color: ${({theme}) => theme.textColor}
 }
 
 .user-profile {
@@ -192,7 +219,32 @@ body{
   width: 1000px;
 }
 
+.upper-menu {
+  border: 2px solid ${({theme}) => theme.typeBoxText};
+  border-radius: 5px;
+}
 
+.mode:hover{
+  cursor: pointer;
+  color: ${({theme}) => theme.typeBoxText};
+  transition: 0.3s ease;
+}
+
+.time-mode:hover{
+  cursor: pointer;
+  color: ${({theme}) => theme.typeBoxText};
+  transition: 0.3s ease;
+}
+
+.word-mode:hover{
+  cursor: pointer;
+  color: ${({theme}) => theme.typeBoxText};
+  transition: 0.3s ease;
+}
+
+.selected_mode {
+  color: ${({theme}) => theme.accent}
+}
 `
 
 // Index:
