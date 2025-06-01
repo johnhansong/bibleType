@@ -67,6 +67,9 @@ body {
 .words{
   font-size: 28px;
   display: flex;
+  max-height: 500px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
   flex-wrap: wrap;
   color: ${({theme}) => theme.typeBoxText}
 }

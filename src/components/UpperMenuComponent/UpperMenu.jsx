@@ -1,5 +1,4 @@
 import React from "react";
-import Select from 'react-select'
 import { useTestMode } from "../../context/testModeContext";
 import { useTheme } from "../../context/themeContext";
 import { useBible } from "../../context/bibleContext";
@@ -21,9 +20,7 @@ const UpperMenu = ({payload}) => {
   const {
     selectedBook, setSelectedBook,
     selectedChapter, setSelectedChapter,
-    verseStart, setVerseStart,
-    verseEnd, setVerseEnd,
-    verseContent, setVerseContent,
+    verseSelection, setVerseSelection,
   } = useBible();
 
 
@@ -39,8 +36,58 @@ const UpperMenu = ({payload}) => {
     setMode(newMode)
   }
 
-  const bibleBooks = Object.values(bibleData)
-    .map(book => book.name)
+  //** Handle Passage **//
+  //handleBook
+  const bibleBooks = Object.entries(bibleData).map(([key, value]) => [key, value.name]);
+  const handleBookChange = (e) => {
+    const newBook = Number(e.target.value)
+    setSelectedBook(newBook)
+    setSelectedChapter(1)
+    setVerseSelection([])
+  }
+
+  //handleChapter
+  const bookChapters = selectedBook
+    ? Array.from({ length: bibleData[selectedBook]?.chapters?.length }, (_, i) => i + 1)
+    : ["Please Select a Book"]
+  const handleChapterChange = (e) => {
+    const currChapter = Number(e.target.value)
+    const numberOfChapters = bibleData[selectedBook]["chapters"].length
+    if (currChapter > numberOfChapters) {
+      setSelectedChapter(1)
+    }
+    setSelectedChapter(currChapter)
+    setVerseSelection([])
+  }
+
+  //handleVerse
+  const chapterLength = bibleData[selectedBook]?.chapters?.[selectedChapter-1]?.length;
+  const chapterVerses = selectedChapter && selectedBook
+    ? Array.from({ length: chapterLength }, (_, i) => i + 1)
+    : []
+
+  const handleVerseChange = (e) => {
+    const value = Number(e.target.value);
+
+    setVerseSelection(prev => {
+      if (prev.length === 0) {
+        return [value, chapterVerses.length]
+      }
+      if (prev.length === 1) {
+        const [first] = prev;
+        return [Math.min(first, value), Math.max(first, value)];
+      }
+
+      return [value];
+    });
+  };
+
+  const rangeText = () => {
+    if (verseSelection.length === 1) return [verseSelection[0], chapterVerses.length];
+    if (verseSelection.length === 2) return [verseSelection[0], verseSelection[1]];
+    return [];
+  }
+  const verseRangeLabel = rangeText().join("-")
 
   return (
     <div className='upper-menu'
@@ -105,13 +152,59 @@ const UpperMenu = ({payload}) => {
 
       { mode === "passage" &&
       <div className="bible_select_row">
-        <Select
-          options={bibleBooks}
-          placeholder="Book"
-        />
-        <Select
-          placeholder="Chapter"
-        />
+        <select
+          name="bible-book"
+          id="book-select"
+          className="bible-selector"
+          onChange={handleBookChange}
+          value={selectedBook ? selectedBook : ""}
+        >
+          <option value="" disabled>--Select Book--</option>
+          {bibleBooks.map(book => {
+            return (<option value={book[0]} key={book[0]}>
+              {book[1]}
+            </option>)
+          })}
+        </select>
+
+        {selectedBook &&
+          <select
+            name="bible-chapter"
+            id="chapter-select"
+            className="bible-selector"
+            onChange={handleChapterChange}
+            value={selectedChapter ? selectedChapter : ""}
+          >
+            <option value="" disabled>--Select Chapter--</option>
+            {bookChapters.map(chapter => {
+              return (<option value={chapter} key={chapter}>
+                {chapter}
+              </option>)
+            })}
+          </select>
+        }
+
+        {selectedBook && selectedChapter &&
+          <select
+            name="bible-verse"
+            id="verse-select"
+            className="bible-selector"
+            onChange={handleVerseChange}
+            value={verseSelection.length === 0 ? "" : "verse-range"}
+          >
+            <option value="" disabled>--Select Verse(s)--</option>
+            {verseSelection.length > 0 && (
+              <option value="verse-range" disabled>
+                {verseRangeLabel}
+              </option>
+            )}
+            {chapterVerses.map(verse => {
+              return (<option value={verse} key={verse}>
+                {verse}
+              </option>)
+            })}
+          </select>
+        }
       </div>
       }
 
