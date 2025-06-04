@@ -22,3 +22,11 @@ const isTitle = (partBeforeBR) => {
 export {
   isTitle
 }
+
+export const bibleVersionOptions = [
+  {label: "NIV", value: "NIV"},
+  {label: "ESV", value: "ESV"},
+  {label: "NLT", value: "NLT"},
+  {label: "NASB", value: "NASB"},
+  {label: "KJV", value: "KJV"}
+]
