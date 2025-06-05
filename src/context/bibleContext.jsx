@@ -57,6 +57,15 @@ export const BibleProvider = ({ children }) => {
     sessionStorage.setItem('bibleVersion', bibleVersion);
   }, [bibleVersion]);
 
+  //edge case: reset chapter when selecting a new book
+  useEffect(() => {
+    if (!bibleData[selectedBook]) return;
+    const numberOfChapters = bibleData[selectedBook].chapters.length
+    setSelectedChapter(Math.floor(Math.random() * numberOfChapters) + 1);
+    setVerseContent([])
+    setVerseSelection([])
+  }, [selectedBook, selectedChapter])
+
    //FETCHING THE RAW BIBLE JSON DATA
   const [rawVerseContent, setRawVerseContent] = useState([])
 
@@ -126,20 +135,6 @@ export const BibleProvider = ({ children }) => {
     const fullText = cleanedVerses.join(" ")
     setVerseContent(fullText.split(/[\s—]+/))
   }, [verseSelection, rawVerseContent])
-
-    //edge case: reset chapter to 1 when selecting a new book
-    useEffect(() => {
-      if (!bibleData[selectedBook]) return;
-      const numberOfChapters = bibleData[selectedBook].chapters.length
-      setSelectedChapter(Math.floor(Math.random() * numberOfChapters) + 1);
-      setVerseContent([])
-    }, [selectedBook])
-
-    //edge case: clear verseSelection when a new book or new chapter is selected
-    useEffect(() => {
-      if (!bibleData[selectedBook]) return;
-      setVerseSelection([])
-    }, [selectedBook, selectedChapter])
 
   return (
     <BibleContext.Provider value={{
