@@ -71,7 +71,8 @@ body {
   overflow-y: auto;
   scroll-behavior: smooth;
   flex-wrap: wrap;
-  color: ${({theme}) => theme.typeBoxText}
+  color: ${({theme}) => theme.typeBoxText};
+  scrollbar-color: ${({theme}) => theme.typeBoxText} ${({theme}) => theme.background};
 }
 
 .word{
@@ -128,6 +129,14 @@ body {
   justify-content: space-between;
   margin-left: auto;
   margin-right: auto;
+}
+
+.footer-dropdowns {
+  display: flex;
+}
+
+.bibleVersionButton {
+  margin-right: 10px;
 }
 
 .stats-box {
@@ -246,7 +255,37 @@ body {
 }
 
 .selected_mode {
-  color: ${({theme}) => theme.accent}
+  color: ${({theme}) => theme.accent};
+}
+
+.bible-selector {
+  background: transparent;
+  min-height: 30px;
+  font-size: 14px;
+  color: ${({theme}) => theme.textColor};
+  border: 1px solid ${({theme}) => theme.typeBoxText};
+  border-radius: 5px;
+  padding: 0px 3px;
+  transition: 0.3s ease;
+}
+
+.bible-selector:hover {
+  cursor: pointer;
+  color: ${({theme}) => theme.accent};
+  border-color: ${({theme}) => theme.accent};
+  transition: 0.3s ease;
+}
+
+#chapter-select {
+  width: 70px;
+  margin: 0px 4px;
+  padding: 0px 3px;
+}
+
+#verse-select {
+  width: 70px;
+  margin: 0px 4px;
+  padding: 0px 3px;
 }
 `
 

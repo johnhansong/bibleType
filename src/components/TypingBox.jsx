@@ -85,10 +85,11 @@ const TypingBox = () => {
   }
 
   useEffect(() => {
+    // console.log("wordsArray useEffect called")
     // Clear the current refs array before new ones are assigned in the render
-    // wordsSpanRef.current = wordsSpanRef.current.slice(0, wordsArray.length).map((ref, index) => ref || React.createRef());
+    wordsSpanRef.current = wordsSpanRef.current.slice(0, wordsArray.length).map((ref, index) => ref || React.createRef());
     // Clear any excess refs if wordsArray becomes smaller
-    // wordsSpanRef.current = wordsSpanRef.current.filter((_, index) => index < wordsArray.length);
+    wordsSpanRef.current = wordsSpanRef.current.filter((_, index) => index < wordsArray.length);
 
     // Call resetWordSpanRefClassname after the render cycle where refs are attached
     // A small timeout can sometimes help if React's ref attachment is asynchronous
@@ -101,6 +102,7 @@ const TypingBox = () => {
   }, [wordsArray]);
 
   const resetTest = () => {
+    // console.log("resetTest called")
     clearInterval(intervalId);
 
     let newWords;
@@ -115,6 +117,7 @@ const TypingBox = () => {
       newWords = generate(50)
     }
     setWordsArray(newWords);
+    // console.log("Generating new words within resetTest")
 
     setCorrectChars(0);
     setIncorrectChars(0);
@@ -133,6 +136,7 @@ const TypingBox = () => {
 
   useEffect(() => {
     resetTest();
+    // console.log("useEffect triggered with dependencies:", { testTime, mode, wordCount, verseContent });
   }, [testTime, mode, wordCount, verseContent])
 
   const handleUserInput = (e) => {
@@ -159,13 +163,11 @@ const TypingBox = () => {
 
     const allCurrChars = wordsSpanRef.current[currWordIndex]?.current?.childNodes;
 
-    //keyCode for space_bar is 32
+    //space_bar logic (keyCode: 32)
     if(e.keyCode === 32) {
-      //space_bar logic
-
-      if (currWordIndex === wordsSpanRef.current.length - 1) {
-        setTestEnd(true);
+      if (currWordIndex === wordsSpanRef.current.length - 1 && currCharIndex >= allCurrChars.length) {
         clearInterval(intervalId);
+        setTestEnd(true);
         return;
       }
 
@@ -174,18 +176,17 @@ const TypingBox = () => {
       if(correctCharsInWord.length === allCurrChars.length) {
         setCorrectWords(correctWords + 1)
       }
+      // console.log("currCharIndex", currCharIndex)
 
       if(allCurrChars.length <= currCharIndex) {
-        // End test if last word was typed
-        if (currWordIndex + 1 >= wordsSpanRef.current.length) {
-          setTestEnd(true);
-          clearInterval(intervalId);
-          return;
-        }
 
         //remove cursor from last place in prev word
-        allCurrChars[currCharIndex-1].classList.remove('current-right')
-        wordsSpanRef.current[currWordIndex+1].current.childNodes[0].className = "current";
+        if (currCharIndex > 0) {
+          allCurrChars[currCharIndex-1].classList.remove('current-right')
+        }
+        if (wordsSpanRef.current[currWordIndex + 1]?.current?.childNodes[0]) {
+          wordsSpanRef.current[currWordIndex+1].current.childNodes[0].className = "current";
+        }
         setCurrWordIndex(currWordIndex+1)
         setCurrCharIndex(0)
         return;
@@ -197,8 +198,8 @@ const TypingBox = () => {
       }
     }
 
+    //backspace logic
     if(e.keyCode === 8) {
-      //backspace logic
       if (0 < currCharIndex && currCharIndex < allCurrChars.length) {
         setCurrCharIndex((prev) => {
           allCurrChars[prev].className = "";
@@ -250,7 +251,7 @@ const TypingBox = () => {
       return;
     }
 
-    // edge case: if keys are pressed at end of word
+    // edge case: if extra typo keys are entered at end of word
     if (currCharIndex === allCurrChars.length) {
       allCurrChars[currCharIndex-1].classList.remove('current-right')
       let newSpan = document.createElement('span');
@@ -293,6 +294,7 @@ const TypingBox = () => {
     inputRef.current.focus();
   }
 
+  // Auto-scroll logic
   const currentWordRef = wordsSpanRef.current[currWordIndex]?.current;
   const box = typeBoxScrollerRef.current;
   if (currentWordRef && box) {
@@ -314,6 +316,7 @@ const TypingBox = () => {
   }
 
   useEffect(() => {
+    // console.log("focusInput useEffect called")
     focusInput();
     if (wordsSpanRef.current[0]?.current?.childNodes[0]) {
       wordsSpanRef.current[0].current.childNodes[0].className = "current";
@@ -335,7 +338,6 @@ const TypingBox = () => {
         extraChars={extraChars}
         graphData={graphData}
         />
-
       </>
       )
       :

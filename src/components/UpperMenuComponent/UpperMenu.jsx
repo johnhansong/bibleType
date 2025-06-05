@@ -71,18 +71,18 @@ const UpperMenu = ({payload}) => {
 
     setVerseSelection(prev => {
       if (prev.length === 0) {
-        return [value, chapterVerses.length]
+        return [value]
       }
       if (prev.length === 1) {
         const [first] = prev;
         return [Math.min(first, value), Math.max(first, value)];
       }
-
       return [value];
     });
   };
 
   const rangeText = () => {
+    if (verseSelection.length === 0) return [1, chapterVerses.length];
     if (verseSelection.length === 1) return [verseSelection[0], chapterVerses.length];
     if (verseSelection.length === 2) return [verseSelection[0], verseSelection[1]];
     return [];
@@ -190,10 +190,10 @@ const UpperMenu = ({payload}) => {
             id="verse-select"
             className="bible-selector"
             onChange={handleVerseChange}
-            value={verseSelection.length === 0 ? "" : "verse-range"}
+            value={verseRangeLabel === 0 ? "" : "verse-range"}
           >
             <option value="" disabled>--Select Verse(s)--</option>
-            {verseSelection.length > 0 && (
+            {verseRangeLabel && (
               <option value="verse-range" disabled>
                 {verseRangeLabel}
               </option>
