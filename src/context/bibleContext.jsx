@@ -31,17 +31,21 @@ export const BibleProvider = ({ children }) => {
     if (!isReset) {
       sessionStorage.setItem("bibleChapter", selectedChapter)
     }
-  }, [selectedBook, selectedChapter, isReset])
+  }, [selectedChapter, isReset])
 
   const resetStorage = () => {
     setIsReset(true);
     sessionStorage.clear();
     const newBook = Math.floor(Math.random()*66) + 1;
     setSelectedBook(newBook.toString());
-    const newChapter = Math.floor(Math.random()*bibleData[selectedBook]?.chapters?.length) + 1
-    setSelectedChapter(newChapter)
-    setTimeout(() => setIsReset(false), 0);
-  }
+
+    setTimeout(() => {
+      const numOfChapters = bibleData[newBook].chapters.length
+      const newChapter = Math.floor(Math.random() * numOfChapters) + 1
+      setSelectedChapter(newChapter)
+      setIsReset(false)
+    }, 0);
+  };
 
   /// SELECT/SET/FILTER VERSE(S)
   const [verseSelection, setVerseSelection] = useState([])
@@ -49,7 +53,6 @@ export const BibleProvider = ({ children }) => {
   /// SELECT/SET/FILTER BIBLE VERSION
   const [bibleVersion, setBibleVersion] = useState(() => {
     const valid_versions = ["NIV", "ESV", "NLT", "NASB", "KJV"]
-    //Available versions: NIV, ESV, NLT, NASB, KJV
     const getBibleVersion = sessionStorage.getItem('bibleVersion') || 'NIV'
     return valid_versions.includes(getBibleVersion) ? getBibleVersion : 'NIV'
   })
@@ -61,10 +64,14 @@ export const BibleProvider = ({ children }) => {
   useEffect(() => {
     if (!bibleData[selectedBook]) return;
     const numberOfChapters = bibleData[selectedBook].chapters.length
-    setSelectedChapter(Math.floor(Math.random() * numberOfChapters) + 1);
+    const currChapter = Number(sessionStorage.getItem("bibleChapter"))
+
+    if (!currChapter || currChapter < 1 || currChapter > numberOfChapters) {
+      setSelectedChapter(Math.floor(Math.random() * numberOfChapters) + 1);
+    }
     setVerseContent([])
     setVerseSelection([])
-  }, [selectedBook, selectedChapter])
+  }, [selectedBook])
 
    //FETCHING THE RAW BIBLE JSON DATA
   const [rawVerseContent, setRawVerseContent] = useState([])
