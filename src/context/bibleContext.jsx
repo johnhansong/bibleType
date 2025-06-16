@@ -79,7 +79,6 @@ export const BibleProvider = ({ children }) => {
   useEffect(() => {
     const fetchPassage = async () => {
       try {
-        console.log("CURRENT BIBLE FETCH", bibleData[selectedBook].name, selectedChapter)
         const response = await fetch(`https://bolls.life/get-text/${bibleVersion}/${selectedBook}/${selectedChapter}/`)
         const data = await response.json();
         // console.log("raw bible json fetched", data)
