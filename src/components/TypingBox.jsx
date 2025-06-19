@@ -188,10 +188,13 @@ const TypingBox = () => {
         return;
       }
 
-      let correctCharsInWord = (charClasses[currWordIndex] || []).filter(cls => cls.class === "correct").length;
+      const currentClasses = charClasses[currWordIndex] || [];
+      const wordCorrect = currentWord
+        .split("")
+        .every((char, idx) => currentClasses[idx]?.class === "correct")
 
-      if(correctCharsInWord.length === allCurrChars.length) {
-        setCorrectWords(correctWords + 1)
+      if (wordCorrect && currentClasses.length === currentWord.length) {
+        setCorrectWords(correctWords + 1);
       }
       // console.log("currCharIndex", currCharIndex)
 
@@ -271,6 +274,7 @@ const TypingBox = () => {
 
     //backspace logic
     if (e.keyCode === 8) {
+      // case 1: currCharIndex is within a word
       if (0 < currCharIndex && currCharIndex < currentWord.length) {
         setCharClasses(prev => {
           const newClasses = [...prev];
@@ -279,31 +283,49 @@ const TypingBox = () => {
           return newClasses;
         });
         setCurrCharIndex(prev => prev - 1);
-      } else if (currCharIndex === currentWord.length) {
-        if (currCharIndex > 0) {
-          if (charClasses[currWordIndex][currCharIndex - 1] === "incorrect extra") {
-            setCharClasses(prev => {
-              const newClasses = [...prev];
-              newClasses[currWordIndex].pop();
-              newClasses[currWordIndex][currCharIndex - 2] = { class: "current-right" };
-              return newClasses;
-            });
-            setCurrCharIndex(prev => prev - 1);
-            return;
-          } else {
-            setCharClasses(prev => {
-              const newClasses = [...prev];
-              newClasses[currWordIndex][currCharIndex - 1] = { class: "current" };
-              return newClasses;
-            });
-            setCurrCharIndex(prev => prev - 1);
-            return;
-          }
+      } else if (currCharIndex >= currentWord.length) {
+        const currentClasses = charClasses[currWordIndex];
+        const lastIndex = currentClasses.length - 1;
+
+        if (currentClasses[lastIndex]?.class?.includes("extra")) {
+          setCharClasses(prev => {
+            const newClasses = [...prev];
+            newClasses[currWordIndex] = newClasses[currWordIndex].slice(0, lastIndex);
+            if (lastIndex > 0) {
+              newClasses[currWordIndex][lastIndex - 1] = {
+                ...newClasses[currWordIndex][lastIndex - 1],
+                class: (newClasses[currWordIndex][lastIndex - 1].class || "")
+                  .replace("current-right", "") + " current-right"
+              };
+            }
+            return newClasses;
+          });
+          setCurrCharIndex(prev => prev - 1);
+          setExtraChars(prev => Math.max(0, prev - 1));
+          return;
+        } else if (
+          currCharIndex === currentWord.length &&
+          charClasses[currWordIndex][currCharIndex - 1]?.class?.includes("current-right")
+        ) {
+          setCharClasses(prev => {
+            const newClasses = [...prev];
+            newClasses[currWordIndex][currCharIndex - 1] = {
+              class: "current"
+            };
+            return newClasses;
+          });
+
+          setCurrCharIndex(prev => prev - 1);
+          return;
         }
+
+        // if (currentClasses[lastIndex]?.class?.includes("current-right")) {
+
+        // }
       } else if (currWordIndex > 0) {
         setCharClasses(prev => {
           const newClasses = [...prev];
-          newClasses[currWordIndex][currCharIndex] = "";
+          newClasses[currWordIndex][currCharIndex] = { class: "" };
           const prevWordIdx = currWordIndex - 1;
           const prevWordLen = wordsArray[prevWordIdx].length;
           newClasses[prevWordIdx][prevWordLen - 1] = { class: "current-right" };
@@ -319,45 +341,50 @@ const TypingBox = () => {
     if (currCharIndex >= currentWord.length) {
       setCharClasses(prev => {
         const newClasses = [...prev];
-        const currentClasses = newClasses[currWordIndex];
+        const currentClasses = [...newClasses[currWordIndex]];
         // If there are already extra characters, remove "current-right" from the last one
-        if (currentClasses.length > currentWord.length) {
-          currentClasses[currentClasses.length - 1] = {
-            ...currentClasses[currentClasses.length - 1],
-            class: "incorrect extra"
+        const lastIndex = currentClasses.length - 1;
+        if (lastIndex >= currentWord.length - 1) {
+          currentClasses[lastIndex] = {
+            ...currentClasses[lastIndex],
+            class: currentClasses[lastIndex].class.replace("current-right", "").trim()
           };
         }
-        // Add new extra character with "current-right"
-        newClasses[currWordIndex] = [
-          ...currentClasses,
-          { class: "incorrect extra current-right", char: e.key }
-        ];
+
+        currentClasses.push({
+          class: "incorrect extra current-right",
+          char: e.key
+        })
+
+        newClasses[currWordIndex] = currentClasses;
         return newClasses;
       });
-      setCurrCharIndex(currCharIndex + 1);
-      setExtraChars(extraChars + 1);
+
+      setCurrCharIndex(prev => prev + 1);
+      setExtraChars(prev => prev + 1);
       return;
     }
-    // if (currCharIndex === allCurrChars.length) {
-    //   allCurrChars[currCharIndex-1].classList.remove('current-right')
-    //   let newSpan = document.createElement('span');
-    //   newSpan.innerText = e.key;
-    //   newSpan.className = "incorrect extra current-right"
-    //   wordsSpanRef.current[currWordIndex].current.append(newSpan)
-    //   setCurrCharIndex(currCharIndex+1);
-    //   setExtraChars(extraChars+1)
-    //   return;
-    // }
 
     //checking if input is correct
     setCharClasses(prev => {
       const newClasses = [...prev];
       newClasses[currWordIndex][currCharIndex] =
         {class: e.key === currentWord[currCharIndex] ? "correct" : "incorrect"};
-      if (currCharIndex < currentWord.length) {
+
+        const isCorrect = e.key === currentWord[currCharIndex];
+      newClasses[currWordIndex][currCharIndex] = {
+        class: isCorrect ? "correct" : "incorrect"
+      };
+
+      // Move cursor forward if there's a next char
+      if (currCharIndex + 1 < currentWord.length) {
         newClasses[currWordIndex][currCharIndex + 1] = { class: "current" };
       } else {
-        newClasses[currWordIndex][currCharIndex] += " current-right";
+        // Last character of word: assign current-right to it
+        newClasses[currWordIndex][currCharIndex] = {
+          ...newClasses[currWordIndex][currCharIndex],
+          class: (newClasses[currWordIndex][currCharIndex].class || "") + " current-right"
+        };
       }
       return newClasses;
     });
