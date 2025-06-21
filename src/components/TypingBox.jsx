@@ -196,25 +196,8 @@ const TypingBox = () => {
       if (wordCorrect && currentClasses.length === currentWord.length) {
         setCorrectWords(correctWords + 1);
       }
-      // console.log("currCharIndex", currCharIndex)
 
-      // if(allCurrChars.length <= currCharIndex) {
-      //   //remove cursor from last place in prev word
-      //   if (currCharIndex > 0) {
-      //     allCurrChars[currCharIndex-1].classList.remove('current-right')
-      //   }
-      //   if (wordsSpanRef.current[currWordIndex + 1]?.current?.childNodes[0]) {
-      //     wordsSpanRef.current[currWordIndex+1].current.childNodes[0].className = "current";
-      //   }
-      //   setCurrWordIndex(currWordIndex+1)
-      //   setCurrCharIndex(0)
-      //   return;
-      // } else {
-      //   //if space is pressed in a word
-      //   setMissedChars(missedChars+1)
-      //   allCurrChars[currCharIndex].classList.remove('current')
-      //   allCurrChars[currCharIndex].className = "incorrect";
-      // }
+      
       setCharClasses(prev => {
         const newClasses = [...prev];
         newClasses[currWordIndex] = newClasses[currWordIndex].map(entry => ({
@@ -284,6 +267,7 @@ const TypingBox = () => {
         });
         setCurrCharIndex(prev => prev - 1);
       } else if (currCharIndex >= currentWord.length) {
+      // case 2: deleting extra characters
         const currentClasses = charClasses[currWordIndex];
         const lastIndex = currentClasses.length - 1;
 
@@ -304,6 +288,7 @@ const TypingBox = () => {
           setExtraChars(prev => Math.max(0, prev - 1));
           return;
         } else if (
+        // case 3: deleting from end of word
           currCharIndex === currentWord.length &&
           charClasses[currWordIndex][currCharIndex - 1]?.class?.includes("current-right")
         ) {
@@ -318,10 +303,6 @@ const TypingBox = () => {
           setCurrCharIndex(prev => prev - 1);
           return;
         }
-
-        // if (currentClasses[lastIndex]?.class?.includes("current-right")) {
-
-        // }
       } else if (currWordIndex > 0) {
         setCharClasses(prev => {
           const newClasses = [...prev];
