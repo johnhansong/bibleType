@@ -7,7 +7,6 @@ import { generate } from "random-words"
 import Stats from "./Stats"
 
 const TypingBox = () => {
-  // context
   const {mode, testTime, wordCount} = useTestMode();
   const {verseContent} = useBible();
 
@@ -15,19 +14,21 @@ const TypingBox = () => {
   const typeBoxScrollerRef = useRef(null);
   const [testFocus, setTestFocus] = useState(false);
 
-  //states for initializing test
+  const [fullPassageWords, setFullPassageWords] = useState([])
   const [wordsArray, setWordsArray] = useState(() => generate(50));
+  const [charClasses, setCharClasses] = useState(() =>
+    wordsArray.map(word => word.split("").map(() => ""))
+  )
   const [intervalId, setIntervalId] = useState(null);
   const [currWordIndex, setCurrWordIndex] = useState(0);
   const [currCharIndex, setCurrCharIndex] = useState(0);
+  const [passageOffset, setPassageOffset] = useState(0);
 
-  //States for testing
   const [testStart, setTestStart] = useState(false);
   const [testEnd, setTestEnd] = useState(false);
   const [countDown, setCountDown] = useState(testTime);
   const [elapsedTime, setElapsedTime] = useState(0);
 
-  //States for checking test performance
   const [correctChars, setCorrectChars] = useState(0);
   const [incorrectChars, setIncorrectChars] = useState(0);
   const [missedChars, setMissedChars] = useState(0);
@@ -64,45 +65,53 @@ const TypingBox = () => {
     setIntervalId(intervalId)
   }
 
+  //   // Modified to use wordsSpanRef.current directly
+  // const resetWordSpanRefClassname = () => {
+  //   // Ensure wordsSpanRef.current is a non-empty array
+  //   if (wordsSpanRef.current && wordsSpanRef.current.length > 0) {
+  //     wordsSpanRef.current.forEach(wordRef => {
+  //       // Check if the ref has a current value (i.e., it's attached to a DOM element)
+  //       if (wordRef && wordRef.current) {
+  //         Array.from(wordRef.current.childNodes).forEach(ltr => {
+  //           ltr.className = "";
+  //         });
+  //       }
+  //     });
+  //   }
 
-    // Modified to use wordsSpanRef.current directly
-  const resetWordSpanRefClassname = () => {
-    // Ensure wordsSpanRef.current is a non-empty array
-    if (wordsSpanRef.current && wordsSpanRef.current.length > 0) {
-      wordsSpanRef.current.forEach(wordRef => {
-        // Check if the ref has a current value (i.e., it's attached to a DOM element)
-        if (wordRef && wordRef.current) {
-          Array.from(wordRef.current.childNodes).forEach(ltr => {
-            ltr.className = "";
-          });
-        }
-      });
-    }
+  //   if (wordsSpanRef.current[0]?.current?.childNodes[0]) {
+  //     wordsSpanRef.current[0].current.childNodes[0].className = 'current';
+  //   }
+  // }
 
-    if (wordsSpanRef.current[0]?.current?.childNodes[0]) {
-      wordsSpanRef.current[0].current.childNodes[0].className = 'current';
-    }
+  const resetCharClasses = () => {
+    const newCharClasses = wordsArray.map((word, wordIndex) =>
+      word.split("").map((_, charIndex) =>
+        wordIndex === 0 && charIndex === 0 ? { class: "current" } : { class: "" }
+      )
+    );
+    setCharClasses(newCharClasses)
   }
 
   useEffect(() => {
-    // console.log("wordsArray useEffect called")
-    // Clear the current refs array before new ones are assigned in the render
-    wordsSpanRef.current = wordsSpanRef.current.slice(0, wordsArray.length).map((ref, index) => ref || React.createRef());
-    // Clear any excess refs if wordsArray becomes smaller
-    wordsSpanRef.current = wordsSpanRef.current.filter((_, index) => index < wordsArray.length);
+    resetCharClasses();
+  }, [wordsArray])
 
-    // Call resetWordSpanRefClassname after the render cycle where refs are attached
-    // A small timeout can sometimes help if React's ref attachment is asynchronous
-    // or if the component hasn't fully rendered the new elements.
-    const timeoutId = setTimeout(() => {
-      resetWordSpanRefClassname();
-    }, 0); // Using setTimeout(..., 0) defers execution until after the current render cycle
+  // useEffect(() => {
+  //   // Clear the current refs array before new ones are assigned in the render
+  //   wordsSpanRef.current = wordsArray.map((_, index) => wordsSpanRef.current[index] || React.createRef());
+  //   // Clear excess refs
+  //   wordsSpanRef.current = wordsSpanRef.current.slice(0, wordsArray.length);
 
-    return () => clearTimeout(timeoutId);
-  }, [wordsArray]);
+  //   // Reset classes after refs are updated
+  //   const timeoutId = setTimeout(() => {
+  //     resetWordSpanRefClassname();
+  //   }, 0);
+
+  //   return () => clearTimeout(timeoutId);
+  // }, [wordsArray]);
 
   const resetTest = () => {
-    // console.log("resetTest called")
     clearInterval(intervalId);
 
     let newWords;
@@ -112,9 +121,18 @@ const TypingBox = () => {
     } else if (mode === "words") {
       newWords = generate(wordCount)
     } else if (mode === "passage") {
-      newWords = verseContent || generate(50);
+      console.log(verseContent)
+      const allWords = verseContent
+        ? verseContent
+          .filter(word => word.match(/^[a-zA-Z.,?!;:'"()[\]{}–—…-]+$/))
+        : generate(50);
+      setFullPassageWords(allWords);
+      newWords = allWords.slice(0, 200);
+      setPassageOffset(0)
     } else {
-      newWords = generate(50)
+      newWords = generate(50);
+      setFullPassageWords([]);
+      setPassageOffset(0);
     }
     setWordsArray(newWords);
     // console.log("Generating new words within resetTest")
@@ -151,135 +169,227 @@ const TypingBox = () => {
       e.preventDefault()
     }
 
-    if (testEnd) {
-      return;
-    }
-
+    if (testEnd) return;
     if (!testStart) {
-      // if test has not started upon initial key press, start timer and test start
       startTimer();
       setTestStart(true);
     }
 
+    const currentWord = wordsArray[currWordIndex]
     const allCurrChars = wordsSpanRef.current[currWordIndex]?.current?.childNodes;
 
     //space_bar logic (keyCode: 32)
     if(e.keyCode === 32) {
-      if (currWordIndex === wordsSpanRef.current.length - 1 && currCharIndex >= allCurrChars.length) {
+      if (mode === "passage" &&
+          currWordIndex + passageOffset === fullPassageWords.length - 1 &&
+          currCharIndex >= currentWord.length){
         clearInterval(intervalId);
         setTestEnd(true);
         return;
       }
 
-      let correctCharsInWord = wordsSpanRef.current[currWordIndex].current.querySelectorAll('.correct')
+      const currentClasses = charClasses[currWordIndex] || [];
+      const wordCorrect = currentWord
+        .split("")
+        .every((char, idx) => currentClasses[idx]?.class === "correct")
 
-      if(correctCharsInWord.length === allCurrChars.length) {
-        setCorrectWords(correctWords + 1)
+      if (wordCorrect && currentClasses.length === currentWord.length) {
+        setCorrectWords(correctWords + 1);
       }
-      // console.log("currCharIndex", currCharIndex)
 
-      if(allCurrChars.length <= currCharIndex) {
+      
+      setCharClasses(prev => {
+        const newClasses = [...prev];
+        newClasses[currWordIndex] = newClasses[currWordIndex].map(entry => ({
+          ...entry,
+          class: entry.class
+            .replace(/current-right|current/g, "")
+            .trim()
+        }));
+        if (newClasses[currWordIndex + 1]?.[0]) {
+          newClasses[currWordIndex + 1][0] = { class: "current" };
+        }
+        return newClasses;
+      });
 
-        //remove cursor from last place in prev word
-        if (currCharIndex > 0) {
-          allCurrChars[currCharIndex-1].classList.remove('current-right')
+      if (currentWord.length <= currCharIndex) {
+        let newWordIndex = currWordIndex + 1;
+        let newOffset = passageOffset;
+        let newWordsArray = wordsArray;
+
+        if (mode === "passage" && newWordIndex >= wordsArray.length - 10) {
+          const remainingWords = fullPassageWords.slice(newOffset + wordsArray.length);
+          if (remainingWords.length > 0) {
+            newWordsArray = [
+              ...newWordsArray,
+              ...remainingWords.slice(0, 10)
+            ].slice(0, 50);
+            newOffset += 10;
+            newWordIndex -= 10;
+            setWordsArray(newWordsArray);
+            setPassageOffset(newOffset);
+
+            setCharClasses(prev => [
+              ...prev,
+              ...remainingWords.slice(0, 10).map(word => word.split("").map(() => ({ class: "" })))
+            ].slice(0, newWordsArray.length));
+          }
         }
-        if (wordsSpanRef.current[currWordIndex + 1]?.current?.childNodes[0]) {
-          wordsSpanRef.current[currWordIndex+1].current.childNodes[0].className = "current";
-        }
-        setCurrWordIndex(currWordIndex+1)
-        setCurrCharIndex(0)
-        return;
+
+        setCurrWordIndex(newWordIndex);
+        setCurrCharIndex(0);
       } else {
-        //if space is pressed in a word
-        setMissedChars(missedChars+1)
-        allCurrChars[currCharIndex].classList.remove('current')
-        allCurrChars[currCharIndex].className = "incorrect";
+        setMissedChars(missedChars + 1);
+        setCharClasses(prev => {
+          const newClasses = [...prev];
+          newClasses[currWordIndex][currCharIndex] = { class: "incorrect" };
+          if (newClasses[currWordIndex + 1]?.[0]) {
+            newClasses[currWordIndex + 1][0] = { class: "current" };
+          }
+          return newClasses;
+        });
+
+        setCurrWordIndex(currWordIndex + 1);
+        setCurrCharIndex(0);
       }
+      return;
     }
 
     //backspace logic
-    if(e.keyCode === 8) {
-      if (0 < currCharIndex && currCharIndex < allCurrChars.length) {
-        setCurrCharIndex((prev) => {
-          allCurrChars[prev].className = "";
-          allCurrChars[prev-1].className = "current";
-          return prev - 1;
+    if (e.keyCode === 8) {
+      // case 1: currCharIndex is within a word
+      if (0 < currCharIndex && currCharIndex < currentWord.length) {
+        setCharClasses(prev => {
+          const newClasses = [...prev];
+          newClasses[currWordIndex][currCharIndex] = { class: "" };
+          newClasses[currWordIndex][currCharIndex - 1] = { class: "current" };
+          return newClasses;
         });
-      } else if (currCharIndex === allCurrChars.length) {
-        // edge case: deleting from end of word
-        if(currCharIndex > 0) {
-          if (allCurrChars[currCharIndex-1].className.includes('extra')){
-            // edge case: deleting extra incorrect letters from end of word
-            allCurrChars[currCharIndex-1].remove();
-            allCurrChars[currCharIndex-2].className += ' current-right'
-            setCurrCharIndex(currCharIndex-1)
-            return currCharIndex-1
-          } else {
-            setCurrCharIndex(currCharIndex-1)
-            allCurrChars[currCharIndex-1].className = "current";
-            return currCharIndex-1
-          }
+        setCurrCharIndex(prev => prev - 1);
+      } else if (currCharIndex >= currentWord.length) {
+      // case 2: deleting extra characters
+        const currentClasses = charClasses[currWordIndex];
+        const lastIndex = currentClasses.length - 1;
+
+        if (currentClasses[lastIndex]?.class?.includes("extra")) {
+          setCharClasses(prev => {
+            const newClasses = [...prev];
+            newClasses[currWordIndex] = newClasses[currWordIndex].slice(0, lastIndex);
+            if (lastIndex > 0) {
+              newClasses[currWordIndex][lastIndex - 1] = {
+                ...newClasses[currWordIndex][lastIndex - 1],
+                class: (newClasses[currWordIndex][lastIndex - 1].class || "")
+                  .replace("current-right", "") + " current-right"
+              };
+            }
+            return newClasses;
+          });
+          setCurrCharIndex(prev => prev - 1);
+          setExtraChars(prev => Math.max(0, prev - 1));
+          return;
+        } else if (
+        // case 3: deleting from end of word
+          currCharIndex === currentWord.length &&
+          charClasses[currWordIndex][currCharIndex - 1]?.class?.includes("current-right")
+        ) {
+          setCharClasses(prev => {
+            const newClasses = [...prev];
+            newClasses[currWordIndex][currCharIndex - 1] = {
+              class: "current"
+            };
+            return newClasses;
+          });
+
+          setCurrCharIndex(prev => prev - 1);
+          return;
         }
-        return currCharIndex
       } else if (currWordIndex > 0) {
-        // edge case: deleting from start of word to previous word
-        setCurrWordIndex((prevWordIndex) => {
-          allCurrChars[currCharIndex].className = "";
-          const backspaceWordIndex = prevWordIndex - 1;
-
-          if (backspaceWordIndex < 0) {
-            console.warn("Error: returning early to prevent negative word index")
-            return prevWordIndex
-          }
-
-          const prevWordRef = wordsSpanRef.current[backspaceWordIndex]?.current;
-          if(!prevWordRef) {
-            console.warn("Invalid ref access at index:", backspaceWordIndex)
-            return prevWordIndex;
-          }
-          const prevWordCharCount = prevWordRef.childNodes.length;
-          // preserving this order is crucial to update currCharIndex before
-          // trying to access allCurrChars[currCharIndex]
-          // prevents accessing an accidental undefined element when switching words
-          setCurrCharIndex(prevWordCharCount);
-          prevWordRef.childNodes[prevWordCharCount - 1].classList.add("current-right")
-
-          return prevWordIndex - 1
+        setCharClasses(prev => {
+          const newClasses = [...prev];
+          newClasses[currWordIndex][currCharIndex] = { class: "" };
+          const prevWordIdx = currWordIndex - 1;
+          const prevWordLen = wordsArray[prevWordIdx].length;
+          newClasses[prevWordIdx][prevWordLen - 1] = { class: "current-right" };
+          return newClasses;
         });
+        setCurrWordIndex(prev => prev - 1);
+        setCurrCharIndex(wordsArray[currWordIndex - 1].length);
       }
       return;
     }
 
     // edge case: if extra typo keys are entered at end of word
-    if (currCharIndex === allCurrChars.length) {
-      allCurrChars[currCharIndex-1].classList.remove('current-right')
-      let newSpan = document.createElement('span');
-      newSpan.innerText = e.key;
-      newSpan.className = "incorrect extra current-right"
-      wordsSpanRef.current[currWordIndex].current.append(newSpan)
-      setCurrCharIndex(currCharIndex+1);
-      setExtraChars(extraChars+1)
+    if (currCharIndex >= currentWord.length) {
+      setCharClasses(prev => {
+        const newClasses = [...prev];
+        const currentClasses = [...newClasses[currWordIndex]];
+        // If there are already extra characters, remove "current-right" from the last one
+        const lastIndex = currentClasses.length - 1;
+        if (lastIndex >= currentWord.length - 1) {
+          currentClasses[lastIndex] = {
+            ...currentClasses[lastIndex],
+            class: currentClasses[lastIndex].class.replace("current-right", "").trim()
+          };
+        }
+
+        currentClasses.push({
+          class: "incorrect extra current-right",
+          char: e.key
+        })
+
+        newClasses[currWordIndex] = currentClasses;
+        return newClasses;
+      });
+
+      setCurrCharIndex(prev => prev + 1);
+      setExtraChars(prev => prev + 1);
       return;
     }
 
     //checking if input is correct
-    if(e.key === allCurrChars[currCharIndex].innerText) {
-      allCurrChars[currCharIndex].className = "correct";
-      setCorrectChars(correctChars+1)
+    setCharClasses(prev => {
+      const newClasses = [...prev];
+      newClasses[currWordIndex][currCharIndex] =
+        {class: e.key === currentWord[currCharIndex] ? "correct" : "incorrect"};
+
+        const isCorrect = e.key === currentWord[currCharIndex];
+      newClasses[currWordIndex][currCharIndex] = {
+        class: isCorrect ? "correct" : "incorrect"
+      };
+
+      // Move cursor forward if there's a next char
+      if (currCharIndex + 1 < currentWord.length) {
+        newClasses[currWordIndex][currCharIndex + 1] = { class: "current" };
+      } else {
+        // Last character of word: assign current-right to it
+        newClasses[currWordIndex][currCharIndex] = {
+          ...newClasses[currWordIndex][currCharIndex],
+          class: (newClasses[currWordIndex][currCharIndex].class || "") + " current-right"
+        };
+      }
+      return newClasses;
+    });
+
+    if (e.key === currentWord[currCharIndex]) {
+      setCorrectChars(correctChars + 1);
     } else {
-      allCurrChars[currCharIndex].className = "incorrect";
-      setIncorrectChars(incorrectChars+1)
+      setIncorrectChars(incorrectChars + 1);
     }
 
-    if(currCharIndex+1 === allCurrChars.length) {
-      allCurrChars[currCharIndex].className += " current-right";
-    } else {
-      allCurrChars[currCharIndex+1].className = "current";
-    }
+    setCurrCharIndex(prev => prev + 1);
 
-    setCurrCharIndex((prev) => prev+1);
+    // Debug: Log state and DOM
+    console.log("Char Classes State:", charClasses[currWordIndex]);
+    if (allCurrChars) {
+      console.log("DOM Classes:", Array.from(allCurrChars).map((char, i) => ({
+        index: i,
+        text: char.innerText,
+        class: char.className
+      })));
+    }
   }
+
+
 
   const calculateWPM = () => {
     const minutes = mode === "time" ? testTime / 60 : elapsedTime / 60;
@@ -294,34 +404,41 @@ const TypingBox = () => {
     inputRef.current.focus();
   }
 
-  // Auto-scroll logic
-  const currentWordRef = wordsSpanRef.current[currWordIndex]?.current;
-  const box = typeBoxScrollerRef.current;
-  if (currentWordRef && box) {
-    const wordTop = currentWordRef.offsetTop;
-    const wordBottom = wordTop + currentWordRef.offsetHeight;
-    const boxScrollTop = box.scrollTop;
-    const boxHeight = box.clientHeight;
-
-    const upperBuffer = 40; // Scroll a bit earlier when approaching the top
-    const lowerBuffer = 80; // Scroll a bit earlier when approaching the bottom
-
-    if (wordBottom > boxScrollTop + boxHeight - lowerBuffer) {
-      // Scroll down earlier
-      box.scrollTop = wordBottom - boxHeight + lowerBuffer;
-    } else if (wordTop < boxScrollTop + upperBuffer) {
-      // Scroll up earlier
-      box.scrollTop = wordTop - upperBuffer;
-    }
-  }
-
   useEffect(() => {
-    // console.log("focusInput useEffect called")
     focusInput();
-    if (wordsSpanRef.current[0]?.current?.childNodes[0]) {
-      wordsSpanRef.current[0].current.childNodes[0].className = "current";
+  }, [])
+
+  // Auto-scroll logic
+  useEffect(() => {
+    const currentWordRef = wordsSpanRef.current[currWordIndex]?.current;
+    const box = typeBoxScrollerRef.current;
+    if (currentWordRef && box) {
+      const wordTop = currentWordRef.offsetTop;
+      const wordBottom = wordTop + currentWordRef.offsetHeight;
+      const boxScrollTop = box.scrollTop;
+      const boxHeight = box.clientHeight;
+      const upperBuffer = 40; // Scroll a bit earlier when approaching the top
+      const lowerBuffer = 80; // Scroll a bit earlier when approaching the bottom
+      if (wordBottom > boxScrollTop + boxHeight - lowerBuffer) {
+        box.scrollTop = wordBottom - boxHeight + lowerBuffer;
+      } else if (wordTop < boxScrollTop + upperBuffer) {
+        box.scrollTop = wordTop - upperBuffer;
+      }
     }
-  }, [wordsSpanRef.current.length])
+  },[currWordIndex])
+
+  // useEffect(() => {
+  //   // console.log("focusInput useEffect called")
+  //   focusInput();
+  //   if (wordsSpanRef.current[0]?.current?.childNodes[0]) {
+  //     wordsSpanRef.current[0].current.childNodes[0].className = "current";
+  //   }
+  // }, [wordsSpanRef.current.length])
+
+  //debugger
+  // console.log("currCharIndex: ", currCharIndex)
+  // console.log("currWordIndex: ", currWordIndex)
+  // console.log("wordsArray: ", wordsArray)
 
   return (
     <div className="type-body">
@@ -346,21 +463,33 @@ const TypingBox = () => {
         <div className="type-box">
           <UpperMenu payload={countDown} onClick={(e) => e.stopPropagation()}/>
           {!testFocus && (
-            <div className="overlay" >
+            <div className="overlay">
               <div className="overlay-text">Click to Focus</div>
             </div>
           )}
           {mode === 'time' && <span className={`counter ${!testFocus ? 'blurred' : ''}`}>{countDown}</span>}
           <div className={`words ${!testFocus ? 'blurred' : ''}`} ref={typeBoxScrollerRef} onClick={focusInput}>
-            {
-              wordsArray?.map((word, index) => (
-                <span className="word" ref={ltr => wordsSpanRef.current[index] = {current: ltr}} key={index}>
-                  {word.split('').map(char => (
-                    <span>{char}</span>
+            {wordsArray?.map((word, wordIndex) => (
+                <span
+                  className="word"
+                  ref={ltr => wordsSpanRef.current[wordIndex] = {current: ltr}}
+                  key={wordIndex}
+                >
+                  {word.split('').map((char, charIndex) => (
+                    <span className={charClasses[wordIndex]?.[charIndex]?.class || ""} key={charIndex}>
+                      {char}
+                    </span>
                   ))}
+                  {(charClasses[wordIndex]?.length || 0) > word.length &&
+                    charClasses[wordIndex]
+                      .slice(word.length)
+                      .map((entry, extraIdx) => (
+                        <span className={entry.class} key={`extra=${extraIdx}`}>
+                          {entry.char || ""}
+                        </span>
+                    ))}
                 </span>
-              ))
-            }
+              ))}
           </div>
         </div>
       </div>
