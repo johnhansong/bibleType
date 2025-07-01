@@ -197,7 +197,7 @@ const TypingBox = () => {
         setCorrectWords(correctWords + 1);
       }
 
-      
+
       setCharClasses(prev => {
         const newClasses = [...prev];
         newClasses[currWordIndex] = newClasses[currWordIndex].map(entry => ({
@@ -258,6 +258,7 @@ const TypingBox = () => {
     //backspace logic
     if (e.keyCode === 8) {
       // case 1: currCharIndex is within a word
+
       if (0 < currCharIndex && currCharIndex < currentWord.length) {
         setCharClasses(prev => {
           const newClasses = [...prev];
@@ -377,6 +378,13 @@ const TypingBox = () => {
     }
 
     setCurrCharIndex(prev => prev + 1);
+
+    if (currWordIndex === wordsArray.length - 1 &&
+      currCharIndex + 1 === wordsArray[wordsArray.length-1].length
+    ) {
+      clearInterval(intervalId);
+      setTestEnd(true);
+    }
 
     // Debug: Log state and DOM
     console.log("Char Classes State:", charClasses[currWordIndex]);

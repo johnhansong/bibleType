@@ -1,7 +1,6 @@
 import React from "react"
 import AccountCircle from "./AccountCircle"
 
-
 const Header = () => {
 
   return (

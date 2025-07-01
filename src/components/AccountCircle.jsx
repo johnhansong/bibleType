@@ -95,7 +95,7 @@ const AccountCircle = () => {
 
   return (
     <div>
-      <AccountCircleIcon onClick={() => setOpenModal(true)}/>
+      <AccountCircleIcon onClick={() => handleModalOpen()}/>
 
         {user && <LogoutIcon onClick={handleLogout}/>}
 
