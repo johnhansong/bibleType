@@ -9,7 +9,7 @@ export const BibleProvider = ({ children }) => {
   const { mode } = useTestMode();
 
   /// SELECT/SET BOOK
-  const [selectedBook, setSelectedBook] = useState( () => {
+  const [selectedBook, setSelectedBook] = useState(() => {
     const randomBookIndex = Math.floor(Math.random()*66) + 1
     return sessionStorage.getItem("bibleBook") || randomBookIndex.toString()
   })

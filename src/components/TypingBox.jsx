@@ -258,7 +258,6 @@ const TypingBox = () => {
     //backspace logic
     if (e.keyCode === 8) {
       // case 1: currCharIndex is within a word
-
       if (0 < currCharIndex && currCharIndex < currentWord.length) {
         setCharClasses(prev => {
           const newClasses = [...prev];
@@ -304,6 +303,34 @@ const TypingBox = () => {
           setCurrCharIndex(prev => prev - 1);
           return;
         }
+      } else if (currCharIndex === 0 && currWordIndex > 0) {
+      // case 4: deleting into previous word
+        setCharClasses(prev => {
+          const newClasses = [...prev];
+
+          const currCls = (newClasses[currWordIndex][0]?.class || "")
+            .replace(/\bcurrent(-right)?\b/g, "")
+            .trim();
+          newClasses[currWordIndex][0] = {
+            ...newClasses[currWordIndex][0],
+            class: currCls
+          };
+
+          const prevWordIdx = currWordIndex - 1;
+          const prevWordLen = wordsArray[prevWordIdx].length;
+          const prevLastCls = (newClasses[prevWordIdx][prevWordLen - 1]?.class || "")
+          .replace(/\bcurrent(-right)?\b/g, "")
+          .trim();
+
+          newClasses[prevWordIdx][prevWordLen - 1] = {
+            ...newClasses[prevWordIdx][prevWordLen - 1],
+            class: (prevLastCls ? prevLastCls + " " : "") + "current-right"
+          };
+          return newClasses;
+        });
+        setCurrWordIndex(prev => prev - 1);
+        setCurrCharIndex(wordsArray[currWordIndex-1].length);
+
       } else if (currWordIndex > 0) {
         setCharClasses(prev => {
           const newClasses = [...prev];
@@ -318,7 +345,6 @@ const TypingBox = () => {
       }
       return;
     }
-
     // edge case: if extra typo keys are entered at end of word
     if (currCharIndex >= currentWord.length) {
       setCharClasses(prev => {
