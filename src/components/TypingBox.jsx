@@ -182,7 +182,8 @@ const TypingBox = () => {
     if(e.keyCode === 32) {
       if (mode === "passage" &&
           currWordIndex + passageOffset === fullPassageWords.length - 1 &&
-          currCharIndex >= currentWord.length){
+          currCharIndex >= currentWord.length
+      ) {
         clearInterval(intervalId);
         setTestEnd(true);
         return;
@@ -197,62 +198,59 @@ const TypingBox = () => {
         setCorrectWords(correctWords + 1);
       }
 
-
-      setCharClasses(prev => {
-        const newClasses = [...prev];
-        newClasses[currWordIndex] = newClasses[currWordIndex].map(entry => ({
-          ...entry,
-          class: entry.class
-            .replace(/current-right|current/g, "")
-            .trim()
-        }));
-        if (newClasses[currWordIndex + 1]?.[0]) {
-          newClasses[currWordIndex + 1][0] = { class: "current" };
-        }
-        return newClasses;
-      });
-
-      if (currentWord.length <= currCharIndex) {
-        let newWordIndex = currWordIndex + 1;
-        let newOffset = passageOffset;
-        let newWordsArray = wordsArray;
-
-        if (mode === "passage" && newWordIndex >= wordsArray.length - 10) {
-          const remainingWords = fullPassageWords.slice(newOffset + wordsArray.length);
-          if (remainingWords.length > 0) {
-            newWordsArray = [
-              ...newWordsArray,
-              ...remainingWords.slice(0, 10)
-            ].slice(0, 50);
-            newOffset += 10;
-            newWordIndex -= 10;
-            setWordsArray(newWordsArray);
-            setPassageOffset(newOffset);
-
-            setCharClasses(prev => [
-              ...prev,
-              ...remainingWords.slice(0, 10).map(word => word.split("").map(() => ({ class: "" })))
-            ].slice(0, newWordsArray.length));
-          }
-        }
-
-        setCurrWordIndex(newWordIndex);
-        setCurrCharIndex(0);
-      } else {
-        setMissedChars(missedChars + 1);
+      if (currCharIndex >= currentWord.length) {
         setCharClasses(prev => {
           const newClasses = [...prev];
-          newClasses[currWordIndex][currCharIndex] = { class: "incorrect" };
-          if (newClasses[currWordIndex + 1]?.[0]) {
-            newClasses[currWordIndex + 1][0] = { class: "current" };
-          }
-          return newClasses;
+            newClasses[currWordIndex] = newClasses[currWordIndex].map(entry => ({
+              ...entry,
+              class: entry.class.replace(/current-right|current/g, "").trim()
+            }));
+            if (newClasses[currWordIndex + 1]?.[0]) {
+              newClasses[currWordIndex + 1][0] = {class: "current"};
+            }
+            return newClasses
         });
 
-        setCurrWordIndex(currWordIndex + 1);
-        setCurrCharIndex(0);
+        if (currentWord.length <= currCharIndex) {
+          let newWordIndex = currWordIndex + 1;
+          let newOffset = passageOffset;
+          let newWordsArray = wordsArray;
+
+          if (mode === "passage" && newWordIndex >= wordsArray.length - 10) {
+            const remainingWords = fullPassageWords.slice(newOffset + wordsArray.length);
+            if (remainingWords.length > 0) {
+              newWordsArray = [
+                ...newWordsArray,
+                ...remainingWords.slice(0, 10)
+              ].slice(0, 50);
+              newOffset += 10;
+              newWordIndex -= 10;
+              setWordsArray(newWordsArray);
+              setPassageOffset(newOffset);
+
+              setCharClasses(prev => [
+                ...prev,
+                ...remainingWords.slice(0, 10).map(word => word.split("").map(() => ({ class: "" })))
+              ].slice(0, newWordsArray.length));
+            }
+          }
+          setCurrWordIndex(newWordIndex);
+          setCurrCharIndex(0);
+          return;
+        }
+        if (currCharIndex < currentWord.length) {
+          setMissedChars(missedChars + 1);
+          setCharClasses(prev => {
+            const newClasses = [...prev];
+            newClasses[currWordIndex][currCharIndex] = { class: "incorrect" };
+            if (newClasses[currWordIndex + 1]?.[0]) {
+              newClasses[currWordIndex + 1][0] = { class: "current" };
+            }
+            return newClasses;
+          });
+          setCurrCharIndex(prev => prev+1);
+        }
       }
-      return;
     }
 
     //backspace logic
