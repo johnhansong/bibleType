@@ -12,7 +12,7 @@ root.render(
   <React.StrictMode>
     <ThemeContextProvider>
       <TestModeContextProvider>
-        <BibleProvider>
+        <BibleProvider> 
           <BrowserRouter>
             <App />
           </BrowserRouter>
