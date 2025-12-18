@@ -121,7 +121,7 @@ const TypingBox = () => {
     } else if (mode === "words") {
       newWords = generate(wordCount)
     } else if (mode === "passage") {
-      console.log(verseContent)
+      // console.log(verseContent)
       const allWords = verseContent
         ? verseContent
           .filter(word => word.match(/^[a-zA-Z.,?!;:'"()[\]{}–—…-]+$/))
@@ -257,6 +257,7 @@ const TypingBox = () => {
     if (e.keyCode === 8) {
       // case 1: currCharIndex is within a word
       if (0 < currCharIndex && currCharIndex < currentWord.length) {
+        // console.log("delete from case 1")
         setCharClasses(prev => {
           const newClasses = [...prev];
           newClasses[currWordIndex][currCharIndex] = { class: "" };
@@ -264,8 +265,11 @@ const TypingBox = () => {
           return newClasses;
         });
         setCurrCharIndex(prev => prev - 1);
-      } else if (currCharIndex >= currentWord.length) {
+
+      } else if (charClasses[currWordIndex].length > currentWord.length ||
+        currCharIndex >= currentWord.length) {
       // case 2: deleting extra characters
+        // console.log("delete from case 2")
         const currentClasses = charClasses[currWordIndex];
         const lastIndex = currentClasses.length - 1;
 
@@ -290,6 +294,7 @@ const TypingBox = () => {
           currCharIndex === currentWord.length &&
           charClasses[currWordIndex][currCharIndex - 1]?.class?.includes("current-right")
         ) {
+          // console.log("delete from case 3")
           setCharClasses(prev => {
             const newClasses = [...prev];
             newClasses[currWordIndex][currCharIndex - 1] = {
@@ -303,6 +308,7 @@ const TypingBox = () => {
         }
       } else if (currCharIndex === 0 && currWordIndex > 0) {
       // case 4: deleting into previous word
+        // console.log("delete from case 4")
         setCharClasses(prev => {
           const newClasses = [...prev];
 
@@ -315,7 +321,7 @@ const TypingBox = () => {
           };
 
           const prevWordIdx = currWordIndex - 1;
-          const prevWordLen = wordsArray[prevWordIdx].length;
+          const prevWordLen = charClasses[prevWordIdx].length;
           const prevLastCls = (newClasses[prevWordIdx][prevWordLen - 1]?.class || "")
           .replace(/\bcurrent(-right)?\b/g, "")
           .trim();
@@ -324,10 +330,12 @@ const TypingBox = () => {
             ...newClasses[prevWordIdx][prevWordLen - 1],
             class: (prevLastCls ? prevLastCls + " " : "") + "current-right"
           };
+
           return newClasses;
         });
+
         setCurrWordIndex(prev => prev - 1);
-        setCurrCharIndex(wordsArray[currWordIndex-1].length);
+        setCurrCharIndex(charClasses[currWordIndex-1].length);
 
       } else if (currWordIndex > 0) {
         setCharClasses(prev => {
@@ -343,6 +351,8 @@ const TypingBox = () => {
       }
       return;
     }
+
+
     // edge case: if extra typo keys are entered at end of word
     if (currCharIndex >= currentWord.length) {
       setCharClasses(prev => {
@@ -365,7 +375,6 @@ const TypingBox = () => {
         newClasses[currWordIndex] = currentClasses;
         return newClasses;
       });
-
       setCurrCharIndex(prev => prev + 1);
       setExtraChars(prev => prev + 1);
       return;
@@ -408,16 +417,6 @@ const TypingBox = () => {
     ) {
       clearInterval(intervalId);
       setTestEnd(true);
-    }
-
-    // Debug: Log state and DOM
-    console.log("Char Classes State:", charClasses[currWordIndex]);
-    if (allCurrChars) {
-      console.log("DOM Classes:", Array.from(allCurrChars).map((char, i) => ({
-        index: i,
-        text: char.innerText,
-        class: char.className
-      })));
     }
   }
 
