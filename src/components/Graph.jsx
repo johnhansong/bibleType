@@ -23,7 +23,7 @@ ChartJS.register(
 )
 
 const Graph = ({graphData}) => {
-  console.log("GRAPHDATA", graphData)
+  // console.log("GRAPHDATA", graphData)
   const {theme} = useTheme()
 
   return (
